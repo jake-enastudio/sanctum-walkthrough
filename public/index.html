@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanctum Rec Club — 3D Walkthrough</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #070707;
+    overflow: hidden;
+    font-family: 'DM Sans', sans-serif;
+    color: white;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #canvas-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  canvas { display: block; width: 100%; height: 100%; }
+
+  /* ── Top Bar ── */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 10;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+  }
+
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #c9a96e;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .badge {
+    background: rgba(201,169,110,0.12);
+    border: 1px solid rgba(201,169,110,0.25);
+    color: #c9a96e;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 2px;
+  }
+
+  /* ── AI Render Button ── */
+  .ai-render-btn {
+    position: absolute;
+    bottom: 28px;
+    left: 32px;
+    z-index: 10;
+    background: linear-gradient(135deg, rgba(201,169,110,0.25), rgba(201,169,110,0.1));
+    border: 1px solid rgba(201,169,110,0.4);
+    color: #c9a96e;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 12px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+  }
+
+  .ai-render-btn:hover {
+    background: linear-gradient(135deg, rgba(201,169,110,0.4), rgba(201,169,110,0.2));
+    border-color: rgba(201,169,110,0.6);
+    color: #e0c88a;
+  }
+
+  .ai-render-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ai-render-btn .spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(201,169,110,0.3);
+    border-top-color: #c9a96e;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── AI Render Result Overlay ── */
+  .render-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 300;
+    background: rgba(0,0,0,0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  .render-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .render-overlay img {
+    max-width: 90vw;
+    max-height: 75vh;
+    border-radius: 6px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .render-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .render-action-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.7);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .render-action-btn:hover {
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+
+  .render-action-btn.primary {
+    background: rgba(201,169,110,0.2);
+    border-color: rgba(201,169,110,0.4);
+    color: #c9a96e;
+  }
+
+  .render-action-btn.primary:hover {
+    background: rgba(201,169,110,0.35);
+  }
+
+  .render-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* ── Mode Selector ── */
+  .mode-bar {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2px;
+    z-index: 10;
+    background: rgba(10,10,10,0.88);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px;
+    padding: 4px;
+  }
+
+  .mode-btn {
+    padding: 10px 24px;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.3);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+  }
+
+  .mode-btn:hover { color: rgba(255,255,255,0.6); }
+
+  .mode-btn.active {
+    background: rgba(255,255,255,0.06);
+    color: #c9a96e;
+    border-bottom-color: #c9a96e;
+  }
+
+  /* ── Controls ── */
+  .controls-hint {
+    position: absolute;
+    bottom: 28px;
+    right: 32px;
+    z-index: 10;
+    pointer-events: none;
+    text-align: right;
+  }
+
+  /* ── Sun/Time Control ── */
+  .sun-control {
+    position: absolute;
+    top: 80px;
+    right: 24px;
+    z-index: 10;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(201,169,110,0.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    min-width: 240px;
+  }
+
+  .sun-control-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #c9a96e;
+    margin-bottom: 12px;
+  }
+
+  .sun-mode-toggle {
+    display: flex;
+    gap: 0;
+    margin-bottom: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .sun-mode-btn {
+    flex: 1;
+    padding: 6px 10px;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.35);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s ease;
+  }
+
+  .sun-mode-btn.active {
+    background: rgba(201,169,110,0.2);
+    color: #c9a96e;
+  }
+
+  .time-display {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: white;
+    text-align: center;
+    margin-bottom: 4px;
+    letter-spacing: 2px;
+  }
+
+  .time-details {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+
+  .time-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    margin-bottom: 6px;
+  }
+
+  .time-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #c9a96e;
+    cursor: pointer;
+    box-shadow: 0 0 8px rgba(201,169,110,0.5);
+  }
+
+  .time-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.5px;
+  }
+
+  .sun-info {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 10px;
+    color: rgba(255,255,255,0.25);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .control-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 5px;
+  }
+
+  .key {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    color: rgba(255,255,255,0.35);
+    font-size: 10px;
+    font-weight: 500;
+    margin: 0 2px;
+  }
+
+  .control-label {
+    color: rgba(255,255,255,0.2);
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin-left: 8px;
+    min-width: 40px;
+  }
+
+  /* ── Loading ── */
+  .loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: #070707;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    transition: opacity 0.8s ease;
+  }
+
+  .loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .loading-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #c9a96e;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .loading-sub {
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+
+  .progress-track {
+    width: 240px;
+    height: 2px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 1px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #c9a96e;
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 1px;
+  }
+
+  .loading-percent {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Welcome ── */
+  .welcome-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(5,5,5,0.85);
+    backdrop-filter: blur(20px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.6s ease;
+  }
+
+  .welcome-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .welcome-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: #c9a96e;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .welcome-sub {
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-bottom: 48px;
+  }
+
+  .enter-btn {
+    padding: 14px 48px;
+    background: transparent;
+    border: 1px solid rgba(201,169,110,0.35);
+    color: #c9a96e;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+
+  .enter-btn:hover {
+    background: rgba(201,169,110,0.12);
+    border-color: #c9a96e;
+  }
+
+  .welcome-hint {
+    margin-top: 28px;
+    color: rgba(255,255,255,0.15);
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+
+  /* ── Crosshair ── */
+  .crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .crosshair.visible { opacity: 0.3; }
+
+  .crosshair::before, .crosshair::after {
+    content: '';
+    position: absolute;
+    background: #c9a96e;
+  }
+
+  .crosshair::before {
+    width: 16px; height: 1px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .crosshair::after {
+    width: 1px; height: 16px;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+</style>
+</head>
+<body>
+
+<div id="canvas-container">
+  <!-- Loading -->
+  <div class="loading-overlay" id="loading">
+    <div class="loading-title">Sanctum</div>
+    <div class="loading-sub">Recovery Club · Bali</div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="loading-percent" id="loading-percent">0%</div>
+  </div>
+
+  <!-- Welcome -->
+  <div class="welcome-overlay hidden" id="welcome">
+    <div class="welcome-title">Sanctum</div>
+    <div class="welcome-sub">Recovery Club · Bali</div>
+    <button class="enter-btn" id="enter-btn">Enter Walkthrough</button>
+    <div class="welcome-hint">WASD to move · Mouse to look · Scroll to zoom</div>
+  </div>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div>
+      <div class="logo">Sanctum</div>
+      <div class="logo-sub">Recovery Club · Bali</div>
+    </div>
+    <div class="badge">3D Walkthrough</div>
+  </div>
+
+  <!-- Mode Bar -->
+  <div class="mode-bar">
+    <button class="mode-btn active" data-mode="orbit">Orbit View</button>
+    <button class="mode-btn" data-mode="walk">First Person</button>
+    <button class="mode-btn" data-mode="fly">Fly Mode</button>
+  </div>
+
+  <!-- Sun/Time Control -->
+  <div class="sun-control" id="sun-control">
+    <div class="sun-control-title">☀ Sun Position</div>
+    <div class="sun-mode-toggle">
+      <button class="sun-mode-btn active" data-sun="live">Live</button>
+      <button class="sun-mode-btn" data-sun="manual">Manual</button>
+    </div>
+    <div class="time-display" id="time-display">14:30</div>
+    <div class="time-details" id="time-details">WITA · Elev 68° · West</div>
+    <input type="range" class="time-slider" id="time-slider" min="300" max="1140" value="870" step="5">
+    <div class="time-labels">
+      <span>5:00</span>
+      <span>12:00</span>
+      <span>19:00</span>
+    </div>
+    <div class="sun-info">
+      <span id="sun-rise">↑ 06:12</span>
+      <span id="sun-set">↓ 18:22</span>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-hint" id="controls-hint">
+    <div class="control-row">
+      <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+      <span class="control-label">Move</span>
+    </div>
+    <div class="control-row">
+      <span class="key">Mouse</span>
+      <span class="control-label">Look</span>
+    </div>
+    <div class="control-row">
+      <span class="key">Scroll</span>
+      <span class="control-label">Zoom</span>
+    </div>
+  </div>
+
+  <!-- Crosshair -->
+  <div class="crosshair" id="crosshair"></div>
+
+  <!-- AI Render Button (hidden for now) -->
+  <button class="ai-render-btn" id="ai-render-btn" style="display:none;">✦ AI Render</button>
+
+  <!-- AI Render Result -->
+  <div class="render-overlay" id="render-overlay">
+    <div class="render-label">AI Photorealistic Render</div>
+    <img id="render-result" src="" alt="AI Render">
+    <div class="render-actions">
+      <button class="render-action-btn" id="render-close">Close</button>
+      <button class="render-action-btn primary" id="render-download">Download</button>
+    </div>
+  </div>
+</div>
+
+<!-- Three.js -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+// ─── State ───
+let mode = 'orbit'; // orbit | walk | fly
+const keys = {};
+let isPointerLocked = false;
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+const MOVE_SPEED = 0.15;
+const FLY_SPEED = 0.25;
+const LOOK_SPEED = 0.002;
+let modelCenter = new THREE.Vector3();
+let modelSize = 0;
+let modelBBox = null;
+let modelRef = null; // reference to loaded model for raycasting
+let walkableMeshes = []; // ground surfaces the player can walk on
+let obstacleMeshes = []; // walls, objects, trees to collide with
+
+// Material classification for walkable surfaces
+// Only materials that are clearly ground paths, floors, and decking
+const WALKABLE_MATERIALS = new Set([
+  // Paths and pavers
+  '[Stone_Pavers_Walk]',
+  'cluster_60x120_taupe_06_abeff', 'cluster_60x120_taupe_06_abeff1',
+  // Concrete (floors, paths)
+  'Concrete_06_1K',
+  // Wood decking
+  'MADEIRA 1', 'MADEIRA 2', 'MADEIRA 001',
+  // Plaster floors
+  'Plaster_03_1K',
+  '<Beige>2',
+  // Generic materials that may include floors (filtered by normal direction)
+  'Material', 'Material3', 'Material4',
+  'Material11', 'Material14',
+  'Material16', 'Material26',
+  'Materialasdfasdfasdfsdfasdw',
+  'bronze2',
+  'spec_#1b1b1b_50_Default_wf_91_BL3419',
+  '*29',
+  'Material57',
+]);
+
+// Materials that are NOT walkable (grass, water, trees, roofs)
+const BLOCKED_MATERIALS = new Set([
+  '[Vegetation_Grass1]1', '[Vegetation_Grass1]2', '[Vegetation_Grass1]3',
+  '[Water Deep]1', '[Water Deep]2',
+  '[Water_Sparkling]', '[Water_Sparkling]2', '[Water_Sparkling]3',
+  'Thatch or Straw 9815', 'Thatch or Straw 9815-v1', 'Thatch or Straw 9815-v2',
+  'Thatch or Straw 9815-v3', 'Thatch or Straw 9815-v4', 'Thatch or Straw 9815-v5',
+  'Thatch or Straw 9815-v6', 'Thatch or Straw 9815-v7', 'Thatch or Straw 9815-v8',
+  'coconut1', 'cocoanut_scrub', 'cocoanut_mat', 'coconut_test3_clean',
+  'Albizia saman 11gk copy',
+]);
+
+// Raycasters for ground detection and collision
+const groundRaycaster = new THREE.Raycaster();
+const collisionRaycaster = new THREE.Raycaster();
+const EYE_HEIGHT = 1.7; // meters - human eye height above ground
+const COLLISION_DISTANCE = 0.4; // meters - how close we can get to walls
+
+// ─── DOM ───
+const container = document.getElementById('canvas-container');
+const loadingEl = document.getElementById('loading');
+const progressFill = document.getElementById('progress-fill');
+const loadingPercent = document.getElementById('loading-percent');
+const welcomeEl = document.getElementById('welcome');
+const enterBtn = document.getElementById('enter-btn');
+const crosshair = document.getElementById('crosshair');
+
+// ─── Renderer (high quality) ───
+const renderer = new THREE.WebGLRenderer({ 
+  antialias: true,
+  powerPreference: 'high-performance',
+  preserveDrawingBuffer: true,
+});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+container.appendChild(renderer.domElement);
+
+// ─── Scene ───
+const scene = new THREE.Scene();
+
+// ─── Environment Map (clean sky for reflections) ───
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+pmremGenerator.compileEquirectangularShader();
+
+const canvas = document.createElement('canvas');
+canvas.width = 512;
+canvas.height = 256;
+const ctx = canvas.getContext('2d');
+const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+gradient.addColorStop(0, '#4a8ab5');
+gradient.addColorStop(0.45, '#c4dde8');
+gradient.addColorStop(0.5, '#f5e6d0');
+gradient.addColorStop(1.0, '#3a5a2a');
+ctx.fillStyle = gradient;
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+const skyTexture = new THREE.CanvasTexture(canvas);
+skyTexture.mapping = THREE.EquirectangularReflectionMapping;
+const envMap = pmremGenerator.fromEquirectangular(skyTexture).texture;
+scene.environment = envMap;
+scene.background = envMap;
+pmremGenerator.dispose();
+
+// ─── Camera ───
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 2000);
+camera.position.set(0, 5, 10);
+
+// ─── Orbit Controls (default mode) ───
+const orbitControls = new OrbitControls(camera, renderer.domElement);
+orbitControls.enableDamping = true;
+orbitControls.dampingFactor = 0.05;
+orbitControls.screenSpacePanning = true;
+orbitControls.maxPolarAngle = Math.PI * 0.85;
+orbitControls.minDistance = 0.5;
+orbitControls.maxDistance = 500;
+orbitControls.target.set(0, 0, 0);
+
+// ─── Lighting (physically-based tropical afternoon) ───
+
+// Soft ambient — the environment map does most of the ambient work now
+const ambient = new THREE.AmbientLight('#e8dcc8', 0.3);
+scene.add(ambient);
+
+// Hemisphere — sky bounce vs ground bounce
+const hemi = new THREE.HemisphereLight('#87ceeb', '#4a6741', 0.4);
+scene.add(hemi);
+
+// Main sun — warm afternoon light from the west
+const sun = new THREE.DirectionalLight('#fff0d4', 2.5);
+sun.position.set(30, 50, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096);
+sun.shadow.camera.left = -50;
+sun.shadow.camera.right = 50;
+sun.shadow.camera.top = 50;
+sun.shadow.camera.bottom = -50;
+sun.shadow.camera.near = 0.5;
+sun.shadow.camera.far = 200;
+sun.shadow.bias = -0.0002;
+sun.shadow.normalBias = 0.02;
+sun.shadow.radius = 3; // Soft shadow edges
+scene.add(sun);
+
+// Warm fill from opposite side (bounced sunlight)
+const fill = new THREE.DirectionalLight('#ffd4a8', 0.6);
+fill.position.set(-20, 20, -10);
+scene.add(fill);
+
+// Warm golden hour accent light (low angle)
+const goldenLight = new THREE.DirectionalLight('#ffb366', 0.4);
+goldenLight.position.set(40, 10, 30);
+scene.add(goldenLight);
+
+// Subtle blue sky bounce from above
+const skyBounce = new THREE.DirectionalLight('#a0c8e0', 0.3);
+skyBounce.position.set(0, 60, 0);
+scene.add(skyBounce);
+
+// ─── Ground plane ───
+const groundGeo = new THREE.PlaneGeometry(200, 200);
+const groundMat = new THREE.MeshStandardMaterial({
+  color: '#1a1c1e',
+  roughness: 0.95,
+  metalness: 0.0,
+});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.01;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// ─── Load Model ───
+const loader = new GLTFLoader();
+
+// Try DRACO decoder
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+loader.setDRACOLoader(dracoLoader);
+
+// Model URL — served from Supabase Storage (public bucket)
+const MODEL_URL = 'https://lghgaagbmfdefivakcsp.supabase.co/storage/v1/object/public/3d-models/sanctum-rec-club.glb?v=2';
+
+loader.load(
+  MODEL_URL,
+  (gltf) => {
+    const model = gltf.scene;
+
+    // Compute bounding box
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+
+    modelBBox = box;
+    modelCenter.copy(center);
+    modelSize = Math.max(size.x, size.y, size.z);
+
+    console.log('Model loaded:', {
+      min: { x: box.min.x.toFixed(3), y: box.min.y.toFixed(3), z: box.min.z.toFixed(3) },
+      max: { x: box.max.x.toFixed(3), y: box.max.y.toFixed(3), z: box.max.z.toFixed(3) },
+      size: { x: size.x.toFixed(3), y: size.y.toFixed(3), z: size.z.toFixed(3) },
+      center: { x: center.x.toFixed(3), y: center.y.toFixed(3), z: center.z.toFixed(3) },
+      maxDim: modelSize.toFixed(3)
+    });
+
+    // Enable shadows and classify meshes with enhanced PBR materials
+    model.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+
+        // Get material name(s) for classification
+        const materials = Array.isArray(child.material) ? child.material : [child.material];
+        let isWalkable = false;
+        let isBlocked = false;
+
+        materials.forEach(m => {
+          if (!m) return;
+          
+          if (m.name) {
+            if (WALKABLE_MATERIALS.has(m.name)) isWalkable = true;
+            if (BLOCKED_MATERIALS.has(m.name)) isBlocked = true;
+          }
+          
+          // Fix double-sided rendering for SketchUp exports
+          m.side = THREE.DoubleSide;
+          
+          // Apply environment map for reflections
+          m.envMap = envMap;
+          m.envMapIntensity = 0.5;
+          m.needsUpdate = true;
+          
+          // ── Material-specific PBR tweaks ──
+          const name = m.name || '';
+          
+          // Water — transparent, reflective
+          if (name.includes('Water') || name.includes('water')) {
+            m.transparent = true;
+            m.opacity = 0.7;
+            m.roughness = 0.05;
+            m.metalness = 0.1;
+            m.envMapIntensity = 1.5;
+            m.color = new THREE.Color('#2a8a9a');
+          }
+          // Metal / Bronze — reflective
+          else if (name.includes('bronze') || name.includes('Bronze') || name.includes('Brass') || name.includes('Metal')) {
+            m.roughness = 0.25;
+            m.metalness = 0.85;
+            m.envMapIntensity = 1.2;
+          }
+          // Wood decking
+          else if (name.includes('MADEIRA') || name.includes('madeira')) {
+            m.roughness = 0.65;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.3;
+          }
+          // Stone pavers
+          else if (name.includes('Stone_Pavers') || name.includes('cluster_60x120')) {
+            m.roughness = 0.75;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.2;
+          }
+          // Concrete
+          else if (name.includes('Concrete')) {
+            m.roughness = 0.8;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.15;
+          }
+          // Thatch roofing
+          else if (name.includes('Thatch') || name.includes('Straw')) {
+            m.roughness = 0.95;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.1;
+          }
+          // Vegetation / Grass
+          else if (name.includes('Vegetation') || name.includes('Grass')) {
+            m.roughness = 0.85;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.15;
+            // Slight translucency color boost
+            if (m.color) {
+              m.color.multiplyScalar(1.1);
+            }
+          }
+          // Coconut palms
+          else if (name.includes('coconut') || name.includes('cocoanut')) {
+            m.roughness = 0.7;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.1;
+          }
+          // Glass / Corrugated metal
+          else if (name.includes('Corrugated')) {
+            m.roughness = 0.3;
+            m.metalness = 0.7;
+            m.envMapIntensity = 0.8;
+          }
+          // Plaster
+          else if (name.includes('Plaster')) {
+            m.roughness = 0.85;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.1;
+          }
+          // Default — slightly reflective
+          else {
+            m.roughness = Math.max(m.roughness || 0.5, 0.4);
+            m.metalness = Math.min(m.metalness || 0.0, 0.2);
+            m.envMapIntensity = 0.3;
+          }
+        });
+
+        if (isWalkable && !isBlocked) {
+          walkableMeshes.push(child);
+        }
+        // Everything is an obstacle for horizontal collision (walls, furniture, etc.)
+        obstacleMeshes.push(child);
+      }
+    });
+
+    modelRef = model;
+    console.log(`Walkable meshes: ${walkableMeshes.length}, Obstacle meshes: ${obstacleMeshes.length}`);
+
+    // Debug: find the Y range of walkable meshes in world space
+    let walkMinY = Infinity, walkMaxY = -Infinity;
+    walkableMeshes.forEach(mesh => {
+      const meshBox = new THREE.Box3().setFromObject(mesh);
+      if (meshBox.min.y < walkMinY) walkMinY = meshBox.min.y;
+      if (meshBox.max.y > walkMaxY) walkMaxY = meshBox.max.y;
+      // Log each walkable mesh's material and world Y
+      const matName = Array.isArray(mesh.material) ? mesh.material.map(m=>m.name).join(',') : mesh.material?.name;
+      console.log(`  Walkable: "${mesh.name}" mat="${matName}" worldY=[${meshBox.min.y.toFixed(3)}..${meshBox.max.y.toFixed(3)}]`);
+    });
+    console.log(`Walkable Y range: ${walkMinY.toFixed(3)} to ${walkMaxY.toFixed(3)}`);
+
+    scene.add(model);
+
+
+    // Position camera to see the whole model
+    const dist = modelSize * 1.2;
+    camera.position.set(
+      center.x + dist * 0.5,
+      center.y + dist * 0.4,
+      center.z + dist * 0.6
+    );
+    camera.lookAt(center);
+
+    // Update orbit target
+    orbitControls.target.copy(center);
+    orbitControls.update();
+
+    // Update sun position relative to model — afternoon angle
+    sun.position.set(center.x + modelSize * 0.8, center.y + modelSize * 1.2, center.z + modelSize * 0.4);
+    sun.target.position.copy(center);
+    scene.add(sun.target);
+    
+    // Update fill lights relative to model
+    fill.position.set(center.x - modelSize * 0.5, center.y + modelSize * 0.5, center.z - modelSize * 0.3);
+    goldenLight.position.set(center.x + modelSize * 0.6, center.y + modelSize * 0.1, center.z + modelSize * 0.5);
+    skyBounce.position.set(center.x, center.y + modelSize * 1.5, center.z);
+
+    // Update shadow camera to cover model
+    const shadowExtent = modelSize * 0.8;
+    sun.shadow.camera.left = -shadowExtent;
+    sun.shadow.camera.right = shadowExtent;
+    sun.shadow.camera.top = shadowExtent;
+    sun.shadow.camera.bottom = -shadowExtent;
+    sun.shadow.camera.far = modelSize * 4;
+    sun.shadow.camera.updateProjectionMatrix();
+
+    // Update ground
+    ground.position.set(center.x, box.min.y - 0.01, center.z);
+    ground.scale.set(modelSize * 0.1, modelSize * 0.1, 1);
+
+    // Fog
+    scene.fog = new THREE.FogExp2('#0a0c0e', 0.8 / modelSize);
+
+    // Update camera far plane
+    camera.far = modelSize * 10;
+    camera.near = modelSize * 0.001;
+    camera.updateProjectionMatrix();
+
+    // ─── Post-Processing ───
+    const composer = new EffectComposer(renderer);
+    
+    // Base render
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+    
+    // SSAO — ambient occlusion for soft corner shadows
+    const ssaoPass = new SSAOPass(scene, camera, window.innerWidth, window.innerHeight);
+    ssaoPass.kernelRadius = modelSize * 0.015;
+    ssaoPass.minDistance = modelSize * 0.0001;
+    ssaoPass.maxDistance = modelSize * 0.03;
+    ssaoPass.output = SSAOPass.OUTPUT.Default;
+    composer.addPass(ssaoPass);
+    
+    // Bloom — subtle glow on bright surfaces (water reflections, metal)
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.15,  // strength — subtle
+      0.6,   // radius
+      0.85   // threshold — only bright areas
+    );
+    composer.addPass(bloomPass);
+    
+    // Output pass (handles color space conversion)
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
+    
+    // Store composer reference for render loop
+    window._composer = composer;
+    window._ssaoPass = ssaoPass;
+
+    // ─── Solar Position System ───
+    const SITE_LAT = -8.593250;
+    const SITE_LNG = 115.125333;
+    const WITA_OFFSET = 8; // UTC+8
+    
+    let sunMode = 'live'; // 'live' or 'manual'
+    let manualMinutes = 870; // 14:30 default
+    
+    const timeDisplay = document.getElementById('time-display');
+    const timeDetails = document.getElementById('time-details');
+    const timeSlider = document.getElementById('time-slider');
+    const sunRiseEl = document.getElementById('sun-rise');
+    const sunSetEl = document.getElementById('sun-set');
+    
+    function calcSolarPosition(latDeg, lngDeg, dateUTC) {
+      const lat = latDeg * Math.PI / 180;
+      const n = Math.floor((dateUTC - new Date(dateUTC.getUTCFullYear(), 0, 0)) / 86400000);
+      const B = (2 * Math.PI / 365) * (n - 81);
+      const declination = (23.45 * Math.PI / 180) * Math.sin(B);
+      const EoT = 9.87 * Math.sin(2*B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+      const utcHours = dateUTC.getUTCHours() + dateUTC.getUTCMinutes()/60 + dateUTC.getUTCSeconds()/3600;
+      const solarTime = utcHours + lngDeg/15 + EoT/60;
+      const hourAngle = (15 * (solarTime - 12)) * Math.PI / 180;
+      
+      const sinElev = Math.sin(lat) * Math.sin(declination) + 
+                      Math.cos(lat) * Math.cos(declination) * Math.cos(hourAngle);
+      const elevation = Math.asin(Math.max(-1, Math.min(1, sinElev)));
+      
+      const cosElev = Math.cos(elevation);
+      let azimuth = 0;
+      if (cosElev > 0.001) {
+        const cosAz = (Math.sin(declination) - Math.sin(lat) * Math.sin(elevation)) / (Math.cos(lat) * cosElev);
+        azimuth = Math.acos(Math.max(-1, Math.min(1, cosAz)));
+        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
+      }
+      
+      return {
+        elevation: elevation * 180 / Math.PI,
+        azimuth: azimuth * 180 / Math.PI,
+        elevationRad: elevation,
+        azimuthRad: azimuth,
+      };
+    }
+    
+    function findSunriseSunset(latDeg, lngDeg, date) {
+      let rise = '—', set = '—';
+      for (let m = 300; m < 720; m += 1) {
+        const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 
+                          Math.floor((m - WITA_OFFSET * 60) / 60), (m - WITA_OFFSET * 60) % 60));
+        const s = calcSolarPosition(latDeg, lngDeg, d);
+        if (s.elevation > 0) {
+          const h = Math.floor(m / 60);
+          const mi = m % 60;
+          rise = `${h.toString().padStart(2,'0')}:${mi.toString().padStart(2,'0')}`;
+          break;
+        }
+      }
+      for (let m = 1140; m > 720; m -= 1) {
+        const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 
+                          Math.floor((m - WITA_OFFSET * 60) / 60), (m - WITA_OFFSET * 60) % 60));
+        const s = calcSolarPosition(latDeg, lngDeg, d);
+        if (s.elevation > 0) {
+          const h = Math.floor(m / 60);
+          const mi = m % 60;
+          set = `${h.toString().padStart(2,'0')}:${mi.toString().padStart(2,'0')}`;
+          break;
+        }
+      }
+      return { rise, set };
+    }
+    
+    function updateSunPosition(witaMinutes) {
+      const now = new Date();
+      const hours = Math.floor(witaMinutes / 60);
+      const minutes = witaMinutes % 60;
+      
+      // Build a UTC date from the WITA time
+      const utcDate = new Date(Date.UTC(
+        now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
+        hours - WITA_OFFSET, minutes
+      ));
+      
+      const solar = calcSolarPosition(SITE_LAT, SITE_LNG, utcDate);
+      
+      // Update UI
+      timeDisplay.textContent = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}`;
+      
+      const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+      const dirIdx = Math.round(((solar.azimuth + 22.5) % 360) / 45) % 8;
+      const dirName = dirs[dirIdx];
+      
+      const belowHorizon = solar.elevation < 0;
+      timeDetails.textContent = belowHorizon 
+        ? `WITA · Below horizon` 
+        : `WITA · Elev ${solar.elevation.toFixed(0)}° · ${dirName}`;
+      
+      // Update sunrise/sunset
+      const riseSet = findSunriseSunset(SITE_LAT, SITE_LNG, utcDate);
+      sunRiseEl.textContent = `↑ ${riseSet.rise}`;
+      sunSetEl.textContent = `↓ ${riseSet.set}`;
+      
+      // ── Update Three.js sun light ──
+      if (modelCenter && modelSize > 0) {
+        const sunDist = modelSize * 1.5;
+        
+        if (belowHorizon) {
+          // Night — minimal moonlight
+          sun.intensity = 0.05;
+          sun.color.set('#4466aa');
+          fill.intensity = 0.02;
+          goldenLight.intensity = 0;
+          skyBounce.intensity = 0.05;
+          ambient.intensity = 0.08;
+          ambient.color.set('#1a2040');
+          hemi.intensity = 0.05;
+          renderer.toneMappingExposure = 0.3;
+          
+          // Darken sky/fog
+          scene.fog.color.set('#0a0c14');
+        } else {
+          // Convert azimuth (0=N,90=E,180=S,270=W) and elevation to 3D position
+          const azRad = solar.azimuthRad;
+          const elRad = solar.elevationRad;
+          
+          const sunX = modelCenter.x + sunDist * Math.cos(elRad) * Math.sin(azRad);
+          const sunY = modelCenter.y + sunDist * Math.sin(elRad);
+          const sunZ = modelCenter.z + sunDist * Math.cos(elRad) * Math.cos(azRad);
+          
+          sun.position.set(sunX, sunY, sunZ);
+          sun.target.position.copy(modelCenter);
+          
+          // ── Color temperature based on elevation ──
+          const t = Math.max(0, Math.min(1, solar.elevation / 60)); // 0=horizon, 1=high noon
+          
+          // Sunrise/sunset: warm orange. Midday: bright white-yellow
+          const r = 1.0;
+          const g = 0.7 + t * 0.28;  // 0.7 → 0.98
+          const b = 0.3 + t * 0.55;  // 0.3 → 0.85
+          sun.color.setRGB(r, g, b);
+          
+          // Intensity based on elevation (stronger when higher)
+          sun.intensity = 0.3 + t * 2.5;
+          
+          // Fill light — opposite side, weaker
+          fill.position.set(
+            modelCenter.x - sunDist * 0.4 * Math.cos(elRad) * Math.sin(azRad),
+            modelCenter.y + sunDist * 0.3,
+            modelCenter.z - sunDist * 0.4 * Math.cos(elRad) * Math.cos(azRad)
+          );
+          fill.intensity = 0.1 + t * 0.5;
+          fill.color.setRGB(0.9 + t * 0.1, 0.85 + t * 0.1, 0.7 + t * 0.2);
+          
+          // Golden hour accent (strong at low elevation)
+          const goldenT = Math.max(0, 1 - t * 3); // strong at low, fades by ~20°
+          goldenLight.intensity = goldenT * 0.8;
+          goldenLight.position.set(sunX * 0.8, modelCenter.y + modelSize * 0.05, sunZ * 0.8);
+          
+          // Sky bounce
+          skyBounce.intensity = 0.1 + t * 0.3;
+          
+          // Ambient
+          ambient.intensity = 0.15 + t * 0.2;
+          ambient.color.setRGB(0.9, 0.85 + t * 0.1, 0.75 + t * 0.15);
+          
+          // Hemisphere
+          hemi.intensity = 0.15 + t * 0.35;
+          
+          // Exposure — brighter at midday
+          renderer.toneMappingExposure = 0.7 + t * 0.5;
+          
+          // Fog color — warm at golden hour, neutral at midday
+          const fogR = 0.6 + t * 0.15;
+          const fogG = 0.65 + t * 0.15;
+          const fogB = 0.7 + t * 0.12;
+          scene.fog.color.setRGB(fogR, fogG, fogB);
+        }
+        
+        // Update shadow camera
+        sun.shadow.camera.updateProjectionMatrix();
+      }
+    }
+    
+    // ── Sun mode toggle ──
+    document.querySelectorAll('.sun-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sun-mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        sunMode = btn.dataset.sun;
+        
+        if (sunMode === 'manual') {
+          timeSlider.disabled = false;
+          timeSlider.style.opacity = '1';
+          updateSunPosition(parseInt(timeSlider.value));
+        } else {
+          timeSlider.disabled = true;
+          timeSlider.style.opacity = '0.4';
+          liveUpdate();
+        }
+      });
+    });
+    
+    // ── Time slider ──
+    timeSlider.addEventListener('input', () => {
+      if (sunMode === 'manual') {
+        manualMinutes = parseInt(timeSlider.value);
+        updateSunPosition(manualMinutes);
+      }
+    });
+    
+    // ── Live update interval ──
+    function liveUpdate() {
+      if (sunMode === 'live') {
+        const now = new Date();
+        const witaMinutes = (now.getUTCHours() + WITA_OFFSET) * 60 + now.getUTCMinutes();
+        timeSlider.value = Math.max(300, Math.min(1140, witaMinutes));
+        updateSunPosition(witaMinutes);
+      }
+    }
+    
+    // Initial update
+    liveUpdate();
+    setInterval(liveUpdate, 30000); // update every 30s in live mode
+    
+    // Start slider disabled in live mode
+    timeSlider.disabled = true;
+    timeSlider.style.opacity = '0.4';
+
+    // Update camera far plane
+    camera.far = modelSize * 10;
+    camera.near = modelSize * 0.001;
+    camera.updateProjectionMatrix();
+
+    // Done loading
+    loadingEl.classList.add('hidden');
+    setTimeout(() => {
+      welcomeEl.classList.remove('hidden');
+    }, 300);
+  },
+  (progress) => {
+    if (progress.total > 0) {
+      const pct = Math.round((progress.loaded / progress.total) * 100);
+      progressFill.style.width = pct + '%';
+      loadingPercent.textContent = pct + '%';
+    }
+  },
+  (error) => {
+    console.error('Error loading model:', error);
+    loadingPercent.textContent = 'Error loading model';
+  }
+);
+
+// ─── Enter ───
+enterBtn.addEventListener('click', () => {
+  welcomeEl.classList.add('hidden');
+});
+
+// ─── Mode Switching ───
+// Human eye height relative to model scale
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const newMode = btn.dataset.mode;
+
+    // Exit pointer lock when switching to orbit
+    if (newMode === 'orbit' && isPointerLocked) {
+      document.exitPointerLock();
+    }
+
+    // When entering First Person, drop camera to ground level + eye height
+    if (newMode === 'walk' && modelBBox) {
+      // Position camera at model center XZ
+      camera.position.x = modelCenter.x;
+      camera.position.z = modelCenter.z + modelSize * 0.1;
+
+      // Start at a reasonable guess for path level, then let ground-following refine
+      // Paths are roughly at Y=6-8 based on mesh analysis
+      const startY = modelBBox.min.y + (modelBBox.max.y - modelBBox.min.y) * 0.15 + EYE_HEIGHT;
+      camera.position.y = startY;
+
+      // Try to find ground beneath us
+      const groundY = getGroundHeight(camera.position.x, camera.position.z, camera.position.y);
+      if (groundY !== null) {
+        camera.position.y = groundY + EYE_HEIGHT;
+      }
+
+      console.log(`First person entry: pos=(${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)})`);
+
+      // Reset camera to look forward horizontally
+      camera.rotation.set(0, 0, 0);
+      euler.set(0, 0, 0, 'YXZ');
+    }
+
+    mode = newMode;
+    orbitControls.enabled = (mode === 'orbit');
+
+    if (mode === 'orbit') {
+      crosshair.classList.remove('visible');
+    }
+  });
+});
+
+// ─── Pointer Lock for walk/fly ───
+renderer.domElement.addEventListener('click', () => {
+  if (mode !== 'orbit' && !isPointerLocked) {
+    renderer.domElement.requestPointerLock();
+  }
+});
+
+document.addEventListener('pointerlockchange', () => {
+  isPointerLocked = document.pointerLockElement === renderer.domElement;
+  crosshair.classList.toggle('visible', isPointerLocked);
+});
+
+// ─── Mouse look ───
+document.addEventListener('mousemove', (e) => {
+  if (!isPointerLocked) return;
+
+  euler.setFromQuaternion(camera.quaternion);
+  euler.y -= e.movementX * LOOK_SPEED;
+  euler.x -= e.movementY * LOOK_SPEED;
+  euler.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, euler.x));
+  camera.quaternion.setFromEuler(euler);
+});
+
+// ─── Keyboard ───
+document.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
+document.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+// ─── Ground Height Detection (only walkable surfaces, facing up) ───
+// Minimum floor level — paths sit around Y=5-8 in this model
+const MIN_WALK_Y = 4.0;
+
+function getGroundHeight(x, z, currentY) {
+  if (!modelRef || walkableMeshes.length === 0) return null;
+
+  // Cast ray DOWNWARD from slightly above current position
+  // This way we find the floor beneath us, not the roof above
+  const origin = new THREE.Vector3(x, currentY + 2, z);
+  groundRaycaster.set(origin, new THREE.Vector3(0, -1, 0));
+  groundRaycaster.far = 20; // only look 20 units down
+
+  const hits = groundRaycaster.intersectObjects(walkableMeshes, false);
+
+  if (hits.length > 0) {
+    for (const hit of hits) {
+      // Only accept surfaces above the minimum walk level
+      if (hit.point.y < MIN_WALK_Y) continue;
+
+      if (hit.face && hit.face.normal) {
+        const worldNormal = hit.face.normal.clone();
+        worldNormal.transformDirection(hit.object.matrixWorld);
+        // Accept surfaces facing upward (floor-like)
+        if (worldNormal.y > 0.5) {
+          return hit.point.y;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// ─── Collision Check (all obstacles) ───
+function checkCollision(position, direction) {
+  if (!modelRef) return false;
+
+  // Cast ray at chest height in movement direction
+  const origin = position.clone();
+  const dir = direction.clone().normalize();
+
+  collisionRaycaster.set(origin, dir);
+  collisionRaycaster.far = COLLISION_DISTANCE;
+
+  const hits = collisionRaycaster.intersectObjects(obstacleMeshes, false);
+  return hits.length > 0;
+}
+
+// ─── Movement ───
+function updateMovement() {
+  if (mode === 'orbit') return;
+
+  const speed = mode === 'fly' ? FLY_SPEED * modelSize * 0.01 : MOVE_SPEED * modelSize * 0.01;
+  const forward = new THREE.Vector3();
+  const right = new THREE.Vector3();
+
+  camera.getWorldDirection(forward);
+  right.crossVectors(forward, camera.up).normalize();
+
+  if (mode === 'walk') {
+    // Keep movement horizontal
+    forward.y = 0;
+    forward.normalize();
+    right.y = 0;
+    right.normalize();
+  }
+
+  const moveDir = new THREE.Vector3();
+
+  if (keys['w'] || keys['arrowup']) moveDir.add(forward);
+  if (keys['s'] || keys['arrowdown']) moveDir.sub(forward);
+  if (keys['d'] || keys['arrowright']) moveDir.add(right);
+  if (keys['a'] || keys['arrowleft']) moveDir.sub(right);
+  if (mode === 'fly') {
+    if (keys[' ']) moveDir.y += 1;
+    if (keys['shift']) moveDir.y -= 1;
+  }
+
+  if (moveDir.length() > 0) {
+    moveDir.normalize().multiplyScalar(speed);
+
+    if (mode === 'walk') {
+      // Check collision before moving
+      const nextPos = camera.position.clone().add(moveDir);
+      const camY = camera.position.y;
+
+      // Check if there's walkable ground at the target position
+      const nextGroundY = getGroundHeight(nextPos.x, nextPos.z, camY);
+      const hasWalkableGround = nextGroundY !== null;
+
+      // Check wall collision from current eye position in move direction
+      const blocked = checkCollision(camera.position, moveDir);
+
+      if (!blocked && hasWalkableGround) {
+        // Check for steep elevation changes (can't walk up sheer walls)
+        const currentGroundY = getGroundHeight(camera.position.x, camera.position.z, camY);
+        const elevationDiff = currentGroundY !== null ? Math.abs(nextGroundY - currentGroundY) : 0;
+        const maxStepHeight = 0.6; // can step up ~60cm (stairs)
+
+        if (elevationDiff <= maxStepHeight) {
+          camera.position.x = nextPos.x;
+          camera.position.z = nextPos.z;
+        }
+      } else if (!hasWalkableGround) {
+        // No walkable ground — try sliding along the edge
+        const moveDirX = new THREE.Vector3(moveDir.x, 0, 0);
+        const moveDirZ = new THREE.Vector3(0, 0, moveDir.z);
+
+        if (moveDirX.length() > 0.001) {
+          const testX = camera.position.clone().add(moveDirX);
+          const groundX = getGroundHeight(testX.x, testX.z, camY);
+          if (groundX !== null && !checkCollision(camera.position, moveDirX)) {
+            camera.position.x += moveDir.x;
+          }
+        }
+        if (moveDirZ.length() > 0.001) {
+          const testZ = camera.position.clone().add(moveDirZ);
+          const groundZ = getGroundHeight(testZ.x, testZ.z, camY);
+          if (groundZ !== null && !checkCollision(camera.position, moveDirZ)) {
+            camera.position.z += moveDir.z;
+          }
+        }
+      } else {
+        // Wall collision — try sliding along walls
+        const moveDirX = new THREE.Vector3(moveDir.x, 0, 0);
+        const moveDirZ = new THREE.Vector3(0, 0, moveDir.z);
+
+        if (moveDirX.length() > 0.001 && !checkCollision(camera.position, moveDirX)) {
+          const testX = camera.position.clone().add(moveDirX);
+          if (getGroundHeight(testX.x, testX.z, camY) !== null) {
+            camera.position.x += moveDir.x;
+          }
+        }
+        if (moveDirZ.length() > 0.001 && !checkCollision(camera.position, moveDirZ)) {
+          const testZ = camera.position.clone().add(moveDirZ);
+          if (getGroundHeight(testZ.x, testZ.z, camY) !== null) {
+            camera.position.z += moveDir.z;
+          }
+        }
+      }
+
+      // Ground following — smoothly follow the walkable surface
+      const groundY = getGroundHeight(camera.position.x, camera.position.z, camera.position.y);
+      if (groundY !== null) {
+        const targetY = groundY + EYE_HEIGHT;
+        camera.position.y += (targetY - camera.position.y) * 0.15;
+      }
+
+      // Hard floor clamp — never go below minimum walkable level
+      if (camera.position.y < MIN_WALK_Y + EYE_HEIGHT) {
+        camera.position.y = MIN_WALK_Y + EYE_HEIGHT;
+      }
+    } else {
+      // Fly mode — no constraints
+      camera.position.add(moveDir);
+    }
+  } else if (mode === 'walk') {
+    // Even when not moving, keep following the ground (in case we just switched)
+    const groundY = getGroundHeight(camera.position.x, camera.position.z, camera.position.y);
+    if (groundY !== null) {
+      const targetY = groundY + EYE_HEIGHT;
+      camera.position.y += (targetY - camera.position.y) * 0.15;
+    }
+    // Hard floor clamp
+    if (camera.position.y < MIN_WALK_Y + EYE_HEIGHT) {
+      camera.position.y = MIN_WALK_Y + EYE_HEIGHT;
+    }
+  }
+}
+
+// ─── Resize ───
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  if (window._composer) {
+    window._composer.setSize(window.innerWidth, window.innerHeight);
+  }
+  if (window._ssaoPass) {
+    window._ssaoPass.setSize(window.innerWidth, window.innerHeight);
+  }
+});
+
+// ─── Animate ───
+function animate() {
+  requestAnimationFrame(animate);
+  updateMovement();
+
+  if (mode === 'orbit') {
+    orbitControls.update();
+  }
+
+  // Use post-processing composer if available, otherwise basic render
+  if (window._composer) {
+    window._composer.render();
+  } else {
+    renderer.render(scene, camera);
+  }
+}
+
+animate();
+
+// ═══════════════════════════════════════════
+// ─── AI PHOTOREALISTIC RENDER ───
+// ═══════════════════════════════════════════
+
+const FAL_KEY = 'd4fbcdbe-1fb1-4e0c-8ee7-1845f55b0318:e705fdbb3e2e3abee3727229fd2591c8';
+const renderBtn = document.getElementById('ai-render-btn');
+const renderOverlay = document.getElementById('render-overlay');
+const renderResult = document.getElementById('render-result');
+const renderClose = document.getElementById('render-close');
+const renderDownload = document.getElementById('render-download');
+
+let lastRenderUrl = null;
+
+renderBtn.addEventListener('click', async () => {
+  if (renderBtn.disabled) return;
+  
+  // Disable button, show spinner
+  renderBtn.disabled = true;
+  renderBtn.innerHTML = '<span class="spinner"></span>Rendering...';
+  
+  try {
+    // 1. Capture screenshot from the canvas
+    // Force a render to make sure buffer is fresh
+    if (window._composer) {
+      window._composer.render();
+    } else {
+      renderer.render(scene, camera);
+    }
+    
+    const screenshotDataUrl = renderer.domElement.toDataURL('image/jpeg', 0.92);
+    console.log('Screenshot captured:', screenshotDataUrl.length, 'bytes');
+    
+    // 2. Build the prompt — KEY: tell it to preserve exact composition
+    const isFirstPerson = (mode === 'walk');
+    const isFlyMode = (mode === 'fly');
+    
+    const prompt = `Keep this EXACT image layout, camera angle, and all building positions completely unchanged. Do not add or remove any buildings or structures. ` +
+      `Only make these subtle enhancements: ` +
+      `1. Upgrade all surface materials to photorealistic textures — real wood grain, natural stone, concrete, woven thatch ` +
+      `2. Add realistic lighting with warm sunlight and soft shadows ` +
+      `3. Make any water features crystal clear and reflective ` +
+      `4. Add some green tropical plants and palm trees only in empty ground areas ` +
+      `Keep everything else exactly as it is. Photorealistic architectural photograph, clean and minimal.`;
+    
+    // 3. Call fal.ai Nano Banana Pro Edit (structure-preserving)
+    console.log('Calling Nano Banana Pro...');
+    
+    const response = await fetch('https://fal.run/fal-ai/nano-banana-pro/edit', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Key ${FAL_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        image_urls: [screenshotDataUrl],
+      }),
+    });
+    
+    if (!response.ok) {
+      const errData = await response.text();
+      throw new Error('API error ' + response.status + ': ' + errData);
+    }
+    
+    const data = await response.json();
+    
+    if (data.images && data.images[0]) {
+      lastRenderUrl = data.images[0].url;
+    } else {
+      throw new Error('No image in response');
+    }
+    
+    if (!lastRenderUrl) throw new Error('No image returned');
+    
+    // 4. Show result
+    renderResult.src = lastRenderUrl;
+    renderOverlay.classList.add('visible');
+    console.log('Render complete:', lastRenderUrl);
+    
+  } catch (err) {
+    console.error('AI Render error:', err);
+    alert('Render failed: ' + err.message);
+  } finally {
+    renderBtn.disabled = false;
+    renderBtn.innerHTML = '✦ AI Render';
+  }
+});
+
+// Close overlay
+renderClose.addEventListener('click', () => {
+  renderOverlay.classList.remove('visible');
+});
+
+// Download render
+renderDownload.addEventListener('click', async () => {
+  if (!lastRenderUrl) return;
+  try {
+    const res = await fetch(lastRenderUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sanctum-render-${Date.now()}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    // Fallback: open in new tab
+    window.open(lastRenderUrl, '_blank');
+  }
+});
+
+// ESC to close overlay
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && renderOverlay.classList.contains('visible')) {
+    renderOverlay.classList.remove('visible');
+  }
+});
+</script>
+</body>
+</html>
