@@ -951,6 +951,43 @@ loader.load(
             m.metalness = 0.0;
             m.envMapIntensity = 0.1;
           }
+          // Rock / cliff face — apply PBR maps
+          else if (name === 'Model001_Material14' || name.includes('Materialasdfasdf')) {
+            m.roughness = 0.85;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.25;
+            
+            // Load and apply PBR texture maps
+            const texLoader = new THREE.TextureLoader();
+            const storageBase = 'https://lghgaagbmfdefivakcsp.supabase.co/storage/v1/object/public/3d-models';
+            
+            // Normal map — fakes surface depth
+            texLoader.load(storageBase + '/rock_normal.jpg', (tex) => {
+              tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+              if (m.map) { tex.repeat.copy(m.map.repeat); tex.offset.copy(m.map.offset); }
+              m.normalMap = tex;
+              m.normalScale = new THREE.Vector2(1.5, 1.5);
+              m.needsUpdate = true;
+            });
+            
+            // Roughness map — surface variation
+            texLoader.load(storageBase + '/rock_rough.jpg', (tex) => {
+              tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+              if (m.map) { tex.repeat.copy(m.map.repeat); tex.offset.copy(m.map.offset); }
+              m.roughnessMap = tex;
+              m.roughness = 1.0;
+              m.needsUpdate = true;
+            });
+            
+            // AO map — darken crevices
+            texLoader.load(storageBase + '/rock_ao.jpg', (tex) => {
+              tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+              if (m.map) { tex.repeat.copy(m.map.repeat); tex.offset.copy(m.map.offset); }
+              m.aoMap = tex;
+              m.aoMapIntensity = 1.2;
+              m.needsUpdate = true;
+            });
+          }
           // Default — slightly reflective
           else {
             m.roughness = Math.max(m.roughness || 0.5, 0.4);
