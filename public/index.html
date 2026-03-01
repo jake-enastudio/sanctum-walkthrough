@@ -1387,7 +1387,7 @@ document.addEventListener('mousemove', (e) => {
 });
 
 // ─── Keyboard ───
-document.addEventListener('keydown', (e) => { keys[e.key.toLowerCase()] = true; });
+document.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey) keys[e.key.toLowerCase()] = true; });
 document.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
 // ─── Ground Height Detection (only walkable surfaces, facing up) ───
