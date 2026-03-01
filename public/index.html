@@ -1574,13 +1574,10 @@ window.addEventListener('resize', () => {
 });
 
 // ─── Animate ───
-// ─── Animate ───
 
 function animate() {
   requestAnimationFrame(animate);
   updateMovement();
-
-  if (mode === 'orbit') {
 
   if (mode === 'orbit') {
     orbitControls.update();
