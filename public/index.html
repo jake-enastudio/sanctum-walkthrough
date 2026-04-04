@@ -830,7 +830,7 @@ dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5
 loader.setDRACOLoader(dracoLoader);
 
 // Model URL — served from Supabase Storage (public bucket)
-const MODEL_URL = 'https://lghgaagbmfdefivakcsp.supabase.co/storage/v1/object/public/3d-models/sanctum-rec-club.glb?v=5';
+const MODEL_URL = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models/sanctum-rec-club.glb';
 
 loader.load(
   MODEL_URL,
@@ -959,7 +959,7 @@ loader.load(
             
             // Load and apply PBR texture maps
             const texLoader = new THREE.TextureLoader();
-            const storageBase = 'https://lghgaagbmfdefivakcsp.supabase.co/storage/v1/object/public/3d-models';
+            const storageBase = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models';
             
             // Normal map — fakes surface depth
             texLoader.load(storageBase + '/rock_normal.jpg', (tex) => {
