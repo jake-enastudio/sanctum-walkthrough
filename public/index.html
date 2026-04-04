@@ -809,6 +809,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
@@ -1001,13 +1002,16 @@ scene.add(ground);
 // ─── Load Model ───
 const loader = new GLTFLoader();
 
-// Try DRACO decoder
+// Draco decoder (for Draco-compressed models)
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
 loader.setDRACOLoader(dracoLoader);
 
+// Meshopt decoder (for meshopt-compressed models)
+loader.setMeshoptDecoder(MeshoptDecoder);
+
 // Model URL — served from Supabase Storage (public bucket)
-const MODEL_URL = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models/Sanctum-new.glb';
+const MODEL_URL = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models/sanctum-optimized.glb';
 
 loader.load(
   MODEL_URL,
