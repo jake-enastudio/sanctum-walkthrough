@@ -742,7 +742,7 @@
   </div>
 
   <!-- Controls -->
-  <div class="controls-hint" id="controls-hint">
+  <div class="controls-hint" id="controls-hint" style="display:none;">
     <div class="control-row">
       <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
       <span class="control-label">Move</span>
@@ -1567,6 +1567,10 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     }
 
     updateMobileControls();
+
+    // Show WASD hints only in fly mode (desktop only)
+    const controlsHint = document.getElementById('controls-hint');
+    controlsHint.style.display = (mode === 'fly' && !isTouchDevice) ? 'block' : 'none';
   });
 });
 
