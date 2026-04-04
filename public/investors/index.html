@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanctum — Investor Details</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a96e;
+    --gold-light: #e0c88a;
+    --gold-dim: rgba(201,169,110,0.15);
+    --dark: #0a0a0a;
+    --dark-card: #111111;
+    --dark-subtle: #131313;
+    --text-primary: rgba(255,255,255,0.88);
+    --text-secondary: rgba(255,255,255,0.45);
+    --text-tertiary: rgba(255,255,255,0.22);
+    --border: rgba(255,255,255,0.06);
+    --border-gold: rgba(201,169,110,0.2);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+
+  body {
+    background: var(--dark);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  ::selection { background: rgba(201,169,110,0.3); color: white; }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .nav-back {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .nav-back:hover { color: var(--gold); }
+
+  /* ── Gate Screen ── */
+  .gate {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .gate-content { max-width: 400px; padding: 0 24px; }
+
+  .gate-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 32px;
+    color: var(--gold);
+    font-size: 18px;
+  }
+
+  .gate-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+  }
+
+  .gate-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+    line-height: 1.7;
+  }
+
+  .gate-input-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .gate-input {
+    flex: 1;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .gate-input:focus { border-color: var(--border-gold); }
+  .gate-input::placeholder { color: var(--text-tertiary); text-transform: none; letter-spacing: normal; }
+
+  .gate-submit {
+    padding: 12px 24px;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.3s;
+    white-space: nowrap;
+  }
+
+  .gate-submit:hover { background: var(--gold); color: var(--dark); }
+
+  .gate-error {
+    font-size: 12px;
+    color: #e85d5d;
+    margin-top: 16px;
+    display: none;
+  }
+
+  .gate-hint {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 24px;
+  }
+
+  /* ── Investor Content (hidden until unlocked) ── */
+  .investor-content {
+    display: none;
+    padding-top: 80px;
+  }
+
+  .investor-content.visible { display: block; }
+
+  section { padding: 80px 40px; }
+  .section-inner { max-width: 1000px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  .section-desc {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.9;
+    max-width: 600px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  /* ── Confidential Banner ── */
+  .confidential-banner {
+    text-align: center;
+    padding: 100px 40px 40px;
+  }
+
+  .confidential-badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--border-gold);
+    padding: 6px 20px;
+    border-radius: 2px;
+    margin-bottom: 24px;
+  }
+
+  .confidential-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 48px);
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .confidential-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+
+  /* ── Data Tables ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 24px;
+  }
+
+  .data-table th {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-gold);
+  }
+
+  .data-table th:last-child { text-align: right; }
+
+  .data-table td {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text-primary);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .data-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .data-table tr.total td {
+    font-weight: 500;
+    color: var(--gold);
+    border-top: 1px solid var(--border-gold);
+    border-bottom: none;
+  }
+
+  .data-table .subdued { color: var(--text-secondary); font-size: 12px; }
+
+  /* ── KPI Cards ── */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin: 32px 0;
+  }
+
+  .kpi-card {
+    padding: 24px;
+    background: var(--dark-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .kpi-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  .kpi-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+
+  /* ── Scenario Cards ── */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .scenario-card {
+    padding: 24px;
+    background: var(--dark-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .scenario-name {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .scenario-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .scenario-row span:last-child {
+    color: var(--text-primary);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Risk Table ── */
+  .risk-item {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 2fr 3fr;
+    gap: 24px;
+  }
+
+  .risk-item:last-child { border-bottom: none; }
+
+  .risk-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .risk-impact {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .risk-impact.high { color: #e85d5d; }
+  .risk-impact.medium { color: #d4a03e; }
+  .risk-impact.low { color: #5db88d; }
+
+  .risk-mitigant {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ── Legal Structure ── */
+  .legal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .legal-card {
+    padding: 24px;
+    background: var(--dark-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .legal-card-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .legal-card-desc {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
+  /* ── Footer ── */
+  .investor-footer {
+    text-align: center;
+    padding: 60px 40px;
+    border-top: 1px solid var(--border);
+  }
+
+  .investor-footer p {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.1em;
+    line-height: 1.8;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    section { padding: 60px 20px; }
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .scenario-grid { grid-template-columns: 1fr; }
+    .risk-item { grid-template-columns: 1fr; gap: 8px; }
+    .legal-grid { grid-template-columns: 1fr; }
+    .gate-input-row { flex-direction: column; }
+    .data-table { font-size: 13px; }
+    .data-table td, .data-table th { padding: 10px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Sanctum</a>
+  <a href="/" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    Back to Overview
+  </a>
+</nav>
+
+<!-- Gate Screen -->
+<div class="gate" id="gate">
+  <div class="gate-content">
+    <div class="gate-icon">&#9919;</div>
+    <div class="gate-title">Investor Access</div>
+    <p class="gate-desc">
+      This section contains confidential financial details, projections, and legal structure
+      information intended for prospective investors only.
+    </p>
+    <div class="gate-input-row">
+      <input type="text" class="gate-input" id="gate-code" placeholder="Enter access code" autocomplete="off" spellcheck="false">
+      <button class="gate-submit" id="gate-submit" onclick="verifyCode()">Access</button>
+    </div>
+    <div class="gate-error" id="gate-error">Invalid access code. Please check and try again.</div>
+    <p class="gate-hint">Access codes are provided during investor conversations.</p>
+  </div>
+</div>
+
+<!-- Investor Content (hidden until code verified) -->
+<div class="investor-content" id="investor-content">
+
+  <div class="confidential-banner">
+    <div class="confidential-badge">Confidential</div>
+    <div class="confidential-title">Sanctum</div>
+    <div class="confidential-subtitle">Investor Information Memorandum</div>
+  </div>
+
+  <!-- Use of Funds -->
+  <section>
+    <div class="section-inner">
+      <div class="section-label">Use of Funds</div>
+      <h2 class="section-title">Capital Allocation</h2>
+      <p class="section-desc">Total raise of $2.81M deployed across land, construction, equipment, and working capital with built-in contingency.</p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Allocation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Land & Site Development</td><td>$480,000</td></tr>
+          <tr><td>Construction & Infrastructure</td><td>$1,200,000</td></tr>
+          <tr><td>Gym Equipment & Fit-out</td><td>$320,000</td></tr>
+          <tr><td>Recovery Circuit (Saunas, Plunge Pools)</td><td>$280,000</td></tr>
+          <tr><td>Villa Construction (River View Units)</td><td>$250,000</td></tr>
+          <tr><td>Working Capital & Pre-opening</td><td>$140,000</td></tr>
+          <tr><td>Contingency (5%)</td><td>$140,000</td></tr>
+          <tr class="total"><td>Total</td><td>$2,810,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Revenue Projections -->
+  <section>
+    <div class="section-inner">
+      <div class="section-label">Financial Projections</div>
+      <h2 class="section-title">Revenue Build-Up</h2>
+      <p class="section-desc">Conservative ramp assumptions across all four revenue pillars.</p>
+
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-value">$2.1M</div>
+          <div class="kpi-label">Year 2 Revenue</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$3.6M</div>
+          <div class="kpi-label">Year 5 Revenue</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">$4.5M</div>
+          <div class="kpi-label">Year 10 Revenue</div>
+        </div>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Revenue Stream</th>
+            <th>Year 2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Gym Memberships<br><span class="subdued">250 members @ avg $350/mo</span></td><td>$1,050,000</td></tr>
+          <tr><td>Recovery Sessions<br><span class="subdued">Day passes + member add-ons</span></td><td>$420,000</td></tr>
+          <tr><td>Restaurant Tenant Lease<br><span class="subdued">Base rent + revenue share</span></td><td>$360,000</td></tr>
+          <tr><td>Villa Bookings<br><span class="subdued">65% avg occupancy</span></td><td>$270,000</td></tr>
+          <tr class="total"><td>Total</td><td>$2,100,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Sensitivity Analysis -->
+  <section>
+    <div class="section-inner">
+      <div class="section-label">Sensitivity Analysis</div>
+      <h2 class="section-title">Scenario Modeling</h2>
+      <p class="section-desc">Three scenarios stress-testing key assumptions: membership uptake, occupancy rates, and tenant stability.</p>
+
+      <div class="scenario-grid">
+        <div class="scenario-card">
+          <div class="scenario-name">Conservative</div>
+          <div class="scenario-row"><span>Gym Members (Y2)</span><span>180</span></div>
+          <div class="scenario-row"><span>Villa Occupancy</span><span>50%</span></div>
+          <div class="scenario-row"><span>Year 2 Revenue</span><span>$1.5M</span></div>
+          <div class="scenario-row"><span>Breakeven</span><span>Year 4</span></div>
+        </div>
+        <div class="scenario-card" style="border-color: var(--border-gold);">
+          <div class="scenario-name">Base Case</div>
+          <div class="scenario-row"><span>Gym Members (Y2)</span><span>250</span></div>
+          <div class="scenario-row"><span>Villa Occupancy</span><span>65%</span></div>
+          <div class="scenario-row"><span>Year 2 Revenue</span><span>$2.1M</span></div>
+          <div class="scenario-row"><span>Breakeven</span><span>Year 3</span></div>
+        </div>
+        <div class="scenario-card">
+          <div class="scenario-name">Upside</div>
+          <div class="scenario-row"><span>Gym Members (Y2)</span><span>350</span></div>
+          <div class="scenario-row"><span>Villa Occupancy</span><span>80%</span></div>
+          <div class="scenario-row"><span>Year 2 Revenue</span><span>$2.9M</span></div>
+          <div class="scenario-row"><span>Breakeven</span><span>Year 2</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Risk Factors -->
+  <section>
+    <div class="section-inner">
+      <div class="section-label">Risk Factors</div>
+      <h2 class="section-title">Risks & Mitigants</h2>
+      <p class="section-desc">Key risks identified with corresponding mitigation strategies.</p>
+
+      <div style="margin-top: 32px;">
+        <div class="risk-item">
+          <div>
+            <div class="risk-name">Construction Overrun</div>
+            <div class="risk-impact medium">Medium Impact</div>
+          </div>
+          <div class="risk-mitigant">5% contingency buffer built into budget. Phased construction allows early revenue from gym/recovery while later phases complete. Fixed-price contractor agreements where possible.</div>
+        </div>
+        <div class="risk-item">
+          <div>
+            <div class="risk-name">Membership Ramp</div>
+            <div class="risk-impact medium">Medium Impact</div>
+          </div>
+          <div class="risk-mitigant">Conservative base case assumes 250 members by Year 2 in a market with 15,000+ expats within 15 minutes. Pre-launch membership campaign to build waitlist before opening.</div>
+        </div>
+        <div class="risk-item">
+          <div>
+            <div class="risk-name">Regulatory / Permitting</div>
+            <div class="risk-impact high">High Impact</div>
+          </div>
+          <div class="risk-mitigant">Experienced local legal counsel engaged. PMA structure established with proper foreign ownership compliance. No construction begins until permits secured.</div>
+        </div>
+        <div class="risk-item">
+          <div>
+            <div class="risk-name">FX Exposure (IDR/USD)</div>
+            <div class="risk-impact low">Low Impact</div>
+          </div>
+          <div class="risk-mitigant">Membership and villa pricing in USD. F&B tenant leases denominated in USD. Primary cost exposure is local labor and materials, which benefit from IDR depreciation.</div>
+        </div>
+        <div class="risk-item">
+          <div>
+            <div class="risk-name">Competition</div>
+            <div class="risk-impact low">Low Impact</div>
+          </div>
+          <div class="risk-mitigant">No direct competitor in Bali combines gym, thermal recovery, F&B, and villas on a riverfront site. The natural setting creates a structural moat that flat-land competitors cannot replicate.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- Legal Structure -->
+  <section>
+    <div class="section-inner">
+      <div class="section-label">Legal Structure</div>
+      <h2 class="section-title">Entity & Governance</h2>
+
+      <div class="legal-grid">
+        <div class="legal-card">
+          <div class="legal-card-title">Investment Vehicle</div>
+          <div class="legal-card-desc">PT PMA (foreign-owned Indonesian limited liability company) established in compliance with Indonesian investment law. All investor equity held through the PT.</div>
+        </div>
+        <div class="legal-card">
+          <div class="legal-card-title">Investor Protections</div>
+          <div class="legal-card-desc">Board observer rights, quarterly financial reporting, annual audited statements, anti-dilution provisions, and pre-emptive rights on future rounds.</div>
+        </div>
+        <div class="legal-card">
+          <div class="legal-card-title">Reporting Cadence</div>
+          <div class="legal-card-desc">Monthly operational dashboard, quarterly financial statements with management commentary, annual audited financials by independent auditor.</div>
+        </div>
+        <div class="legal-card">
+          <div class="legal-card-title">Governing Law</div>
+          <div class="legal-card-desc">Indonesian law governs the PT PMA. Shareholder agreement includes Singapore-seated arbitration clause for dispute resolution.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div class="investor-footer">
+    <p>
+      This document is confidential and intended solely for the recipient.<br>
+      Sanctum Recovery Club &middot; Bali, Indonesia<br>
+      For questions, contact <a href="mailto:jake.ena.studio@gmail.com" style="color: var(--gold); text-decoration: none;">jake.ena.studio@gmail.com</a>
+    </p>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = 'https://hnzejfxoycbmthoezwma.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhuemVqZnhveWNibXRob2V6d21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODU5MzgsImV4cCI6MjA5MDg2MTkzOH0.UUnDA3H0jo64lGY_QwMkOjPcG9EpyQ7jLcqajE3cGLQ';
+
+// Allow enter key to submit
+document.getElementById('gate-code').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') verifyCode();
+});
+
+async function verifyCode() {
+  const code = document.getElementById('gate-code').value.trim().toUpperCase();
+  const errorEl = document.getElementById('gate-error');
+  const btn = document.getElementById('gate-submit');
+
+  errorEl.style.display = 'none';
+
+  if (!code) {
+    errorEl.textContent = 'Please enter an access code.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Verifying...';
+  btn.disabled = true;
+
+  try {
+    // Check if code exists and is active
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/investor_access_codes?code=eq.${encodeURIComponent(code)}&is_active=eq.true&select=id`,
+      {
+        headers: {
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`
+        }
+      }
+    );
+
+    const data = await res.json();
+    const success = data.length > 0;
+
+    // Log the attempt
+    await fetch(`${SUPABASE_URL}/rest/v1/investor_access_log`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ code_used: code, success })
+    });
+
+    if (success) {
+      // Unlock content
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('investor-content').classList.add('visible');
+      // Store in session so refreshes don't re-gate
+      sessionStorage.setItem('sanctum_investor_access', 'true');
+    } else {
+      errorEl.textContent = 'Invalid access code. Please check and try again.';
+      errorEl.style.display = 'block';
+    }
+
+  } catch (err) {
+    errorEl.textContent = 'Connection error. Please try again.';
+    errorEl.style.display = 'block';
+  }
+
+  btn.textContent = 'Access';
+  btn.disabled = false;
+}
+
+// Check session storage on load
+if (sessionStorage.getItem('sanctum_investor_access') === 'true') {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('investor-content').classList.add('visible');
+}
+</script>
+
+</body>
+</html>
