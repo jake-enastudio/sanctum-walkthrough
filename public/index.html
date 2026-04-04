@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Sanctum Rec Club — 3D Walkthrough</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap');
@@ -535,6 +535,155 @@
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
   }
+
+  /* ── Virtual Joystick (mobile only) ── */
+  .joystick-zone {
+    display: none;
+    position: absolute;
+    bottom: 100px;
+    left: 24px;
+    width: 140px;
+    height: 140px;
+    z-index: 20;
+    pointer-events: all;
+  }
+
+  .joystick-base {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(201,169,110,0.2);
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .joystick-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(201,169,110,0.25);
+    border: 1px solid rgba(201,169,110,0.45);
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    transition: none;
+  }
+
+  /* ── Fly mode vertical buttons (mobile) ── */
+  .fly-vertical-btns {
+    display: none;
+    position: absolute;
+    bottom: 100px;
+    right: 24px;
+    z-index: 20;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .fly-vertical-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(201,169,110,0.2);
+    color: rgba(201,169,110,0.6);
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .fly-vertical-btn:active {
+    background: rgba(201,169,110,0.2);
+    border-color: rgba(201,169,110,0.5);
+  }
+
+  /* ── Mobile responsive ── */
+  @media (max-width: 768px) {
+    .top-bar {
+      padding: 16px 16px;
+    }
+
+    .logo {
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+
+    .logo-sub {
+      font-size: 9px;
+      letter-spacing: 3px;
+    }
+
+    .badge {
+      font-size: 8px;
+      padding: 4px 10px;
+    }
+
+    .mode-bar {
+      bottom: 20px;
+      padding: 3px;
+    }
+
+    .mode-btn {
+      padding: 8px 14px;
+      font-size: 9px;
+      letter-spacing: 1px;
+    }
+
+    .controls-hint {
+      display: none;
+    }
+
+    .sun-control {
+      top: 60px;
+      right: 12px;
+      min-width: 200px;
+      padding: 12px 14px;
+    }
+
+    .sun-control-title {
+      font-size: 9px;
+    }
+
+    .time-display {
+      font-size: 22px;
+    }
+
+    .loading-title, .welcome-title {
+      font-size: 28px;
+      letter-spacing: 4px;
+    }
+
+    .loading-sub, .welcome-sub {
+      font-size: 10px;
+      letter-spacing: 3px;
+    }
+
+    .welcome-hint {
+      font-size: 10px;
+    }
+
+    .joystick-zone {
+      display: block;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .mode-btn {
+      padding: 7px 10px;
+      font-size: 8px;
+    }
+
+    .sun-control {
+      min-width: 170px;
+      padding: 10px 12px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -553,7 +702,7 @@
     <div class="welcome-title">Sanctum</div>
     <div class="welcome-sub">Recovery Club · Bali</div>
     <button class="enter-btn" id="enter-btn">Enter Walkthrough</button>
-    <div class="welcome-hint">WASD to move · Mouse to look · Scroll to zoom</div>
+    <div class="welcome-hint" id="welcome-hint">WASD to move · Mouse to look · Scroll to zoom</div>
   </div>
 
   <!-- Top Bar -->
@@ -612,6 +761,19 @@
   <!-- Crosshair -->
   <div class="crosshair" id="crosshair"></div>
 
+  <!-- Virtual Joystick (mobile) -->
+  <div class="joystick-zone" id="joystick-zone">
+    <div class="joystick-base">
+      <div class="joystick-thumb" id="joystick-thumb"></div>
+    </div>
+  </div>
+
+  <!-- Fly mode up/down buttons (mobile) -->
+  <div class="fly-vertical-btns" id="fly-vertical-btns">
+    <div class="fly-vertical-btn" id="fly-up-btn">↑</div>
+    <div class="fly-vertical-btn" id="fly-down-btn">↓</div>
+  </div>
+
   <!-- AI Render Button (hidden for now) -->
   <button class="ai-render-btn" id="ai-render-btn" style="display:none;">✦ AI Render</button>
 
@@ -661,6 +823,14 @@ let modelBBox = null;
 let modelRef = null; // reference to loaded model for raycasting
 let walkableMeshes = []; // ground surfaces the player can walk on
 let obstacleMeshes = []; // walls, objects, trees to collide with
+
+// ─── Mobile State ───
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+let joystickActive = false;
+let joystickTouchId = null;
+let joystickInput = { x: 0, y: 0 };
+let flyUpPressed = false;
+let flyDownPressed = false;
 
 // Material classification for walkable surfaces
 // Only materials that are clearly ground paths, floors, and decking
@@ -720,7 +890,7 @@ const renderer = new THREE.WebGLRenderer({
   preserveDrawingBuffer: true,
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouchDevice ? 1.5 : 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -1094,12 +1264,13 @@ loader.load(
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
     
-    // SSAO — ambient occlusion for soft corner shadows
+    // SSAO — ambient occlusion for soft corner shadows (desktop only — too heavy for mobile)
     const ssaoPass = new SSAOPass(scene, camera, window.innerWidth, window.innerHeight);
     ssaoPass.kernelRadius = modelSize * 0.015;
     ssaoPass.minDistance = modelSize * 0.0001;
     ssaoPass.maxDistance = modelSize * 0.03;
     ssaoPass.output = SSAOPass.OUTPUT.Default;
+    ssaoPass.enabled = !isTouchDevice;
     composer.addPass(ssaoPass);
     
     // Bloom — subtle glow on bright surfaces (water reflections, metal)
@@ -1109,6 +1280,7 @@ loader.load(
       0.6,   // radius
       0.85   // threshold — only bright areas
     );
+    bloomPass.enabled = !isTouchDevice;
     composer.addPass(bloomPass);
     
     // Output pass (handles color space conversion)
@@ -1418,12 +1590,14 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     if (mode === 'orbit') {
       crosshair.classList.remove('visible');
     }
+
+    updateMobileControls();
   });
 });
 
-// ─── Pointer Lock for walk/fly ───
+// ─── Pointer Lock for walk/fly (desktop only) ───
 renderer.domElement.addEventListener('click', () => {
-  if (mode !== 'orbit' && !isPointerLocked) {
+  if (mode !== 'orbit' && !isPointerLocked && !isTouchDevice) {
     renderer.domElement.requestPointerLock();
   }
 });
@@ -1447,6 +1621,155 @@ document.addEventListener('mousemove', (e) => {
 // ─── Keyboard ───
 document.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey) keys[e.key.toLowerCase()] = true; });
 document.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
+
+// ─── Mobile Detection & Touch Controls ───
+
+const joystickZone = document.getElementById('joystick-zone');
+const joystickThumb = document.getElementById('joystick-thumb');
+const flyVerticalBtns = document.getElementById('fly-vertical-btns');
+const welcomeHint = document.getElementById('welcome-hint');
+
+// Update welcome hint for mobile
+if (isTouchDevice) {
+  welcomeHint.textContent = 'Drag to look · Joystick to move · Pinch to zoom';
+}
+
+// Joystick state (continued)
+let joystickCenter = { x: 0, y: 0 };
+const JOYSTICK_MAX_RADIUS = 45;
+
+// Touch-look state
+let lookTouchId = null;
+let lastLookPos = { x: 0, y: 0 };
+const TOUCH_LOOK_SPEED = 0.003;
+
+// Show/hide joystick based on mode
+function updateMobileControls() {
+  if (!isTouchDevice) return;
+  const showJoystick = mode !== 'orbit';
+  joystickZone.style.display = showJoystick ? 'block' : 'none';
+  flyVerticalBtns.style.display = mode === 'fly' ? 'flex' : 'none';
+}
+
+// ── Joystick Touch Handling ──
+joystickZone.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  const touch = e.changedTouches[0];
+  joystickTouchId = touch.identifier;
+  joystickActive = true;
+
+  const rect = joystickZone.getBoundingClientRect();
+  joystickCenter.x = rect.left + rect.width / 2;
+  joystickCenter.y = rect.top + rect.height / 2;
+
+  updateJoystickPosition(touch.clientX, touch.clientY);
+}, { passive: false });
+
+joystickZone.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  for (const touch of e.changedTouches) {
+    if (touch.identifier === joystickTouchId) {
+      updateJoystickPosition(touch.clientX, touch.clientY);
+    }
+  }
+}, { passive: false });
+
+joystickZone.addEventListener('touchend', (e) => {
+  for (const touch of e.changedTouches) {
+    if (touch.identifier === joystickTouchId) {
+      joystickActive = false;
+      joystickTouchId = null;
+      joystickInput = { x: 0, y: 0 };
+      joystickThumb.style.transform = 'translate(-50%, -50%)';
+    }
+  }
+});
+
+joystickZone.addEventListener('touchcancel', () => {
+  joystickActive = false;
+  joystickTouchId = null;
+  joystickInput = { x: 0, y: 0 };
+  joystickThumb.style.transform = 'translate(-50%, -50%)';
+});
+
+function updateJoystickPosition(touchX, touchY) {
+  let dx = touchX - joystickCenter.x;
+  let dy = touchY - joystickCenter.y;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+
+  if (dist > JOYSTICK_MAX_RADIUS) {
+    dx = (dx / dist) * JOYSTICK_MAX_RADIUS;
+    dy = (dy / dist) * JOYSTICK_MAX_RADIUS;
+  }
+
+  joystickThumb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  joystickInput.x = dx / JOYSTICK_MAX_RADIUS;
+  joystickInput.y = dy / JOYSTICK_MAX_RADIUS;
+}
+
+// ── Fly Up/Down Buttons ──
+const flyUpBtn = document.getElementById('fly-up-btn');
+const flyDownBtn = document.getElementById('fly-down-btn');
+
+flyUpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); flyUpPressed = true; }, { passive: false });
+flyUpBtn.addEventListener('touchend', () => { flyUpPressed = false; });
+flyUpBtn.addEventListener('touchcancel', () => { flyUpPressed = false; });
+
+flyDownBtn.addEventListener('touchstart', (e) => { e.preventDefault(); flyDownPressed = true; }, { passive: false });
+flyDownBtn.addEventListener('touchend', () => { flyDownPressed = false; });
+flyDownBtn.addEventListener('touchcancel', () => { flyDownPressed = false; });
+
+// ── Touch Look (drag anywhere on canvas to look around) ──
+renderer.domElement.addEventListener('touchstart', (e) => {
+  if (mode === 'orbit') return; // OrbitControls handles orbit touch
+
+  // Find a touch that isn't on the joystick or fly buttons
+  for (const touch of e.changedTouches) {
+    if (touch.identifier === joystickTouchId) continue;
+
+    // Check if touch is on the joystick zone or fly buttons
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    if (el && (el.closest('#joystick-zone') || el.closest('#fly-vertical-btns'))) continue;
+
+    lookTouchId = touch.identifier;
+    lastLookPos = { x: touch.clientX, y: touch.clientY };
+    break;
+  }
+}, { passive: true });
+
+renderer.domElement.addEventListener('touchmove', (e) => {
+  if (mode === 'orbit') return;
+
+  for (const touch of e.changedTouches) {
+    if (touch.identifier === lookTouchId) {
+      const dx = touch.clientX - lastLookPos.x;
+      const dy = touch.clientY - lastLookPos.y;
+
+      euler.setFromQuaternion(camera.quaternion);
+      euler.y -= dx * TOUCH_LOOK_SPEED;
+      euler.x -= dy * TOUCH_LOOK_SPEED;
+      euler.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, euler.x));
+      camera.quaternion.setFromEuler(euler);
+
+      lastLookPos = { x: touch.clientX, y: touch.clientY };
+    }
+  }
+}, { passive: true });
+
+renderer.domElement.addEventListener('touchend', (e) => {
+  for (const touch of e.changedTouches) {
+    if (touch.identifier === lookTouchId) {
+      lookTouchId = null;
+    }
+  }
+});
+
+// ── Prevent default on canvas to stop iOS pull-to-refresh etc ──
+renderer.domElement.addEventListener('touchmove', (e) => {
+  if (mode !== 'orbit') {
+    e.preventDefault();
+  }
+}, { passive: false });
 
 // ─── Ground Height Detection (only walkable surfaces, facing up) ───
 // Minimum floor level — paths sit around Y=5-8 in this model
@@ -1517,13 +1840,21 @@ function updateMovement() {
 
   const moveDir = new THREE.Vector3();
 
+  // Keyboard input
   if (keys['w'] || keys['arrowup']) moveDir.add(forward);
   if (keys['s'] || keys['arrowdown']) moveDir.sub(forward);
   if (keys['d'] || keys['arrowright']) moveDir.add(right);
   if (keys['a'] || keys['arrowleft']) moveDir.sub(right);
+
+  // Mobile joystick input (joystickInput.y is inverted: up = negative)
+  if (joystickActive) {
+    moveDir.add(forward.clone().multiplyScalar(-joystickInput.y));
+    moveDir.add(right.clone().multiplyScalar(joystickInput.x));
+  }
+
   if (mode === 'fly') {
-    if (keys[' ']) moveDir.y += 1;
-    if (keys['shift']) moveDir.y -= 1;
+    if (keys[' '] || flyUpPressed) moveDir.y += 1;
+    if (keys['shift'] || flyDownPressed) moveDir.y -= 1;
   }
 
   if (moveDir.length() > 0) {
