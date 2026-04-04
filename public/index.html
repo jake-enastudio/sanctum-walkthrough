@@ -858,6 +858,134 @@
     line-height: 1.6;
   }
 
+  /* ── Visual Gallery ── */
+  .gallery {
+    background: var(--dark-subtle);
+    padding: 120px 40px;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 280px 280px;
+    gap: 12px;
+    margin-top: 48px;
+  }
+
+  .gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--dark-card);
+    border: 1px solid var(--border);
+    cursor: default;
+  }
+
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+
+  .gallery-item:hover img {
+    transform: scale(1.03);
+  }
+
+  .gallery-item.hero-img {
+    grid-row: 1 / 3;
+  }
+
+  .gallery-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(ellipse at 50% 50%, rgba(201,169,110,0.04) 0%, transparent 70%),
+      var(--dark-card);
+    gap: 12px;
+  }
+
+  .gallery-placeholder-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-size: 16px;
+    opacity: 0.5;
+  }
+
+  .gallery-placeholder-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .gallery-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 16px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .gallery-caption-text {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* ── Hero visual strip ── */
+  .hero-visual {
+    height: 50vh;
+    min-height: 320px;
+    max-height: 480px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-visual-inner {
+    width: 100%;
+    height: 100%;
+    background:
+      radial-gradient(ellipse at 50% 40%, rgba(201,169,110,0.05) 0%, transparent 60%),
+      var(--dark-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero-visual-placeholder {
+    text-align: center;
+  }
+
+  .hero-visual-placeholder-text {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
   /* ── Mobile ── */
   @media (max-width: 900px) {
     nav { padding: 16px 20px; }
@@ -879,6 +1007,13 @@
     .vision-grid, .location-grid, .invest-grid { grid-template-columns: 1fr; gap: 48px; }
     .pillars-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
     .walkthrough-cta { padding: 100px 20px; }
+    .gallery { padding: 80px 20px; }
+    .gallery-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 220px 220px 220px;
+    }
+    .gallery-item.hero-img { grid-row: 1 / 2; grid-column: 1 / 3; }
+    .hero-visual { min-height: 240px; }
     .metrics-row { grid-template-columns: 1fr 1fr; }
     .revenue-streams { grid-template-columns: 1fr; }
     .exit-paths { grid-template-columns: 1fr; }
@@ -930,6 +1065,16 @@
     <div class="scroll-line"></div>
   </div>
 </section>
+
+<!-- Hero Visual -->
+<div class="hero-visual" id="hero-visual">
+  <div class="hero-visual-inner" id="hero-visual-inner">
+    <div class="hero-visual-placeholder">
+      <div class="gallery-placeholder-icon" style="margin: 0 auto 12px;">&#9661;</div>
+      <div class="hero-visual-placeholder-text">Aerial render or site photograph</div>
+    </div>
+  </div>
+</div>
 
 <section id="vision">
   <div class="section-inner">
@@ -1027,6 +1172,53 @@
           <div class="pillar-feature">Retreat & membership packages</div>
           <div class="pillar-feature">Natural ventilation design</div>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Visual Gallery -->
+<section class="gallery" id="gallery">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">The Setting</div>
+      <h2 class="section-title">A Glimpse of Sanctum</h2>
+    </div>
+    <div class="gallery-grid reveal" style="transition-delay: 0.1s;">
+      <div class="gallery-item hero-img" id="gal-hero">
+        <div class="gallery-placeholder">
+          <div class="gallery-placeholder-icon">&#9661;</div>
+          <div class="gallery-placeholder-label">Site overview render</div>
+        </div>
+        <div class="gallery-caption"><span class="gallery-caption-text">Full site overview</span></div>
+      </div>
+      <div class="gallery-item" id="gal-gym">
+        <div class="gallery-placeholder">
+          <div class="gallery-placeholder-icon">&#9661;</div>
+          <div class="gallery-placeholder-label">Gym</div>
+        </div>
+        <div class="gallery-caption"><span class="gallery-caption-text">Training facility</span></div>
+      </div>
+      <div class="gallery-item" id="gal-recovery">
+        <div class="gallery-placeholder">
+          <div class="gallery-placeholder-icon">&#9661;</div>
+          <div class="gallery-placeholder-label">Recovery</div>
+        </div>
+        <div class="gallery-caption"><span class="gallery-caption-text">Thermal circuit & waterfall</span></div>
+      </div>
+      <div class="gallery-item" id="gal-restaurant">
+        <div class="gallery-placeholder">
+          <div class="gallery-placeholder-icon">&#9661;</div>
+          <div class="gallery-placeholder-label">Restaurant</div>
+        </div>
+        <div class="gallery-caption"><span class="gallery-caption-text">River-view dining</span></div>
+      </div>
+      <div class="gallery-item" id="gal-villas">
+        <div class="gallery-placeholder">
+          <div class="gallery-placeholder-icon">&#9661;</div>
+          <div class="gallery-placeholder-label">Villas</div>
+        </div>
+        <div class="gallery-caption"><span class="gallery-caption-text">Private river-view villas</span></div>
       </div>
     </div>
   </div>
@@ -1372,6 +1564,47 @@ async function submitForm() {
     btn.textContent = 'Send Inquiry';
   }
 }
+
+// ── Gallery Image Loader ──
+// Upload images to Supabase Storage (sanctum project > 3d-models bucket) with these filenames:
+// hero.jpg, gym.jpg, recovery.jpg, restaurant.jpg, villas.jpg, site-hero.jpg
+// They will auto-load into the gallery and hero visual sections.
+(function() {
+  const storageBase = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models';
+  const imageMap = {
+    'gal-hero': 'hero.jpg',
+    'gal-gym': 'gym.jpg',
+    'gal-recovery': 'recovery.jpg',
+    'gal-restaurant': 'restaurant.jpg',
+    'gal-villas': 'villas.jpg'
+  };
+
+  Object.entries(imageMap).forEach(([id, filename]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const img = new Image();
+    img.onload = () => {
+      const placeholder = el.querySelector('.gallery-placeholder');
+      if (placeholder) placeholder.remove();
+      el.insertBefore(img, el.firstChild);
+    };
+    img.src = `${storageBase}/${filename}`;
+    img.alt = filename.replace('.jpg', '').replace('-', ' ');
+  });
+
+  // Hero visual
+  const heroImg = new Image();
+  heroImg.onload = () => {
+    const heroInner = document.getElementById('hero-visual-inner');
+    if (heroInner) {
+      heroInner.innerHTML = '';
+      heroInner.appendChild(heroImg);
+    }
+  };
+  heroImg.src = `${storageBase}/site-hero.jpg`;
+  heroImg.alt = 'Sanctum aerial view';
+  heroImg.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+})();
 </script>
 
 </body>
