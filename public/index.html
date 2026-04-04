@@ -724,7 +724,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
+renderer.toneMappingExposure = 0.9;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 container.appendChild(renderer.domElement);
 
@@ -778,7 +778,7 @@ const hemi = new THREE.HemisphereLight('#87ceeb', '#4a6741', 0.4);
 scene.add(hemi);
 
 // Main sun — warm afternoon light from the west
-const sun = new THREE.DirectionalLight('#fff0d4', 2.5);
+const sun = new THREE.DirectionalLight('#fff0d4', 2.0);
 sun.position.set(30, 50, 20);
 sun.castShadow = true;
 sun.shadow.mapSize.set(4096, 4096);
@@ -876,9 +876,26 @@ loader.load(
           // Fix double-sided rendering for SketchUp exports
           m.side = THREE.DoubleSide;
           
+          // ── Fix SketchUp white base color blowout ──
+          // SketchUp exports set baseColorFactor to [1,1,1] even when textures provide the actual color.
+          // This causes blown-out highlights. If a texture map exists, we tint the base color
+          // down so the texture provides the color and the multiplier doesn't overbrighten.
+          if (m.map && m.color) {
+            const brightness = (m.color.r + m.color.g + m.color.b) / 3;
+            if (brightness > 0.95) {
+              m.color.setRGB(0.85, 0.85, 0.85);
+            }
+          }
+          
+          // Kill any emissive that wasn't intentional
+          if (m.emissive) {
+            m.emissive.setRGB(0, 0, 0);
+          }
+          m.emissiveIntensity = 0;
+          
           // Apply environment map for reflections
           m.envMap = envMap;
-          m.envMapIntensity = 0.5;
+          m.envMapIntensity = 0.35;
           m.needsUpdate = true;
           
           // ── Material-specific PBR tweaks ──
@@ -933,11 +950,15 @@ loader.load(
               m.color.multiplyScalar(1.1);
             }
           }
-          // Coconut palms
-          else if (name.includes('coconut') || name.includes('cocoanut')) {
-            m.roughness = 0.7;
+          // Coconut palms & tropical vegetation
+          else if (name.includes('coconut') || name.includes('cocoanut') || name.includes('folhas') || name.includes('tronco')) {
+            m.roughness = 0.75;
             m.metalness = 0.0;
-            m.envMapIntensity = 0.1;
+            m.envMapIntensity = 0.08;
+            // Prevent foliage from glowing — darken the base color multiplier further
+            if (m.map && m.color) {
+              m.color.setRGB(0.75, 0.75, 0.75);
+            }
           }
           // Glass / Corrugated metal
           else if (name.includes('Corrugated')) {
