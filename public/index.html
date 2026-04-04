@@ -717,7 +717,6 @@
   <!-- Mode Bar -->
   <div class="mode-bar">
     <button class="mode-btn active" data-mode="orbit">Orbit View</button>
-    <button class="mode-btn" data-mode="walk">First Person</button>
     <button class="mode-btn" data-mode="fly">Fly Mode</button>
   </div>
 
@@ -1560,30 +1559,6 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
       document.exitPointerLock();
     }
 
-    // When entering First Person, drop camera to ground level + eye height
-    if (newMode === 'walk' && modelBBox) {
-      // Position camera at model center XZ
-      camera.position.x = modelCenter.x;
-      camera.position.z = modelCenter.z + modelSize * 0.1;
-
-      // Start at a reasonable guess for path level, then let ground-following refine
-      // Paths are roughly at Y=6-8 based on mesh analysis
-      const startY = modelBBox.min.y + (modelBBox.max.y - modelBBox.min.y) * 0.15 + EYE_HEIGHT;
-      camera.position.y = startY;
-
-      // Try to find ground beneath us
-      const groundY = getGroundHeight(camera.position.x, camera.position.z, camera.position.y);
-      if (groundY !== null) {
-        camera.position.y = groundY + EYE_HEIGHT;
-      }
-
-      console.log(`First person entry: pos=(${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)})`);
-
-      // Reset camera to look forward horizontally
-      camera.rotation.set(0, 0, 0);
-      euler.set(0, 0, 0, 'YXZ');
-    }
-
     mode = newMode;
     orbitControls.enabled = (mode === 'orbit');
 
@@ -1821,22 +1796,14 @@ function checkCollision(position, direction) {
 
 // ─── Movement ───
 function updateMovement() {
-  if (mode === 'orbit') return;
+  if (mode !== 'fly') return;
 
-  const speed = mode === 'fly' ? FLY_SPEED * modelSize * 0.01 : MOVE_SPEED * modelSize * 0.01;
+  const speed = FLY_SPEED * modelSize * 0.01;
   const forward = new THREE.Vector3();
   const right = new THREE.Vector3();
 
   camera.getWorldDirection(forward);
   right.crossVectors(forward, camera.up).normalize();
-
-  if (mode === 'walk') {
-    // Keep movement horizontal
-    forward.y = 0;
-    forward.normalize();
-    right.y = 0;
-    right.normalize();
-  }
 
   const moveDir = new THREE.Vector3();
 
@@ -1859,93 +1826,7 @@ function updateMovement() {
 
   if (moveDir.length() > 0) {
     moveDir.normalize().multiplyScalar(speed);
-
-    if (mode === 'walk') {
-      // Check collision before moving
-      const nextPos = camera.position.clone().add(moveDir);
-      const camY = camera.position.y;
-
-      // Check if there's walkable ground at the target position
-      const nextGroundY = getGroundHeight(nextPos.x, nextPos.z, camY);
-      const hasWalkableGround = nextGroundY !== null;
-
-      // Check wall collision from current eye position in move direction
-      const blocked = checkCollision(camera.position, moveDir);
-
-      if (!blocked && hasWalkableGround) {
-        // Check for steep elevation changes (can't walk up sheer walls)
-        const currentGroundY = getGroundHeight(camera.position.x, camera.position.z, camY);
-        const elevationDiff = currentGroundY !== null ? Math.abs(nextGroundY - currentGroundY) : 0;
-        const maxStepHeight = 0.6; // can step up ~60cm (stairs)
-
-        if (elevationDiff <= maxStepHeight) {
-          camera.position.x = nextPos.x;
-          camera.position.z = nextPos.z;
-        }
-      } else if (!hasWalkableGround) {
-        // No walkable ground — try sliding along the edge
-        const moveDirX = new THREE.Vector3(moveDir.x, 0, 0);
-        const moveDirZ = new THREE.Vector3(0, 0, moveDir.z);
-
-        if (moveDirX.length() > 0.001) {
-          const testX = camera.position.clone().add(moveDirX);
-          const groundX = getGroundHeight(testX.x, testX.z, camY);
-          if (groundX !== null && !checkCollision(camera.position, moveDirX)) {
-            camera.position.x += moveDir.x;
-          }
-        }
-        if (moveDirZ.length() > 0.001) {
-          const testZ = camera.position.clone().add(moveDirZ);
-          const groundZ = getGroundHeight(testZ.x, testZ.z, camY);
-          if (groundZ !== null && !checkCollision(camera.position, moveDirZ)) {
-            camera.position.z += moveDir.z;
-          }
-        }
-      } else {
-        // Wall collision — try sliding along walls
-        const moveDirX = new THREE.Vector3(moveDir.x, 0, 0);
-        const moveDirZ = new THREE.Vector3(0, 0, moveDir.z);
-
-        if (moveDirX.length() > 0.001 && !checkCollision(camera.position, moveDirX)) {
-          const testX = camera.position.clone().add(moveDirX);
-          if (getGroundHeight(testX.x, testX.z, camY) !== null) {
-            camera.position.x += moveDir.x;
-          }
-        }
-        if (moveDirZ.length() > 0.001 && !checkCollision(camera.position, moveDirZ)) {
-          const testZ = camera.position.clone().add(moveDirZ);
-          if (getGroundHeight(testZ.x, testZ.z, camY) !== null) {
-            camera.position.z += moveDir.z;
-          }
-        }
-      }
-
-      // Ground following — smoothly follow the walkable surface
-      const groundY = getGroundHeight(camera.position.x, camera.position.z, camera.position.y);
-      if (groundY !== null) {
-        const targetY = groundY + EYE_HEIGHT;
-        camera.position.y += (targetY - camera.position.y) * 0.15;
-      }
-
-      // Hard floor clamp — never go below minimum walkable level
-      if (camera.position.y < MIN_WALK_Y + EYE_HEIGHT) {
-        camera.position.y = MIN_WALK_Y + EYE_HEIGHT;
-      }
-    } else {
-      // Fly mode — no constraints
-      camera.position.add(moveDir);
-    }
-  } else if (mode === 'walk') {
-    // Even when not moving, keep following the ground (in case we just switched)
-    const groundY = getGroundHeight(camera.position.x, camera.position.z, camera.position.y);
-    if (groundY !== null) {
-      const targetY = groundY + EYE_HEIGHT;
-      camera.position.y += (targetY - camera.position.y) * 0.15;
-    }
-    // Hard floor clamp
-    if (camera.position.y < MIN_WALK_Y + EYE_HEIGHT) {
-      camera.position.y = MIN_WALK_Y + EYE_HEIGHT;
-    }
+    camera.position.add(moveDir);
   }
 }
 
