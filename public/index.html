@@ -2,2002 +2,925 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Sanctum Rec Club — 3D Walkthrough</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanctum — Recovery Club · Bali</title>
+<meta name="description" content="A premium wellness destination on Bali's riverfront. Gym, recovery, restaurant, and private villas surrounded by nature.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+  :root {
+    --gold: #c9a96e;
+    --gold-light: #e0c88a;
+    --gold-dim: rgba(201,169,110,0.15);
+    --dark: #0a0a0a;
+    --dark-card: #111111;
+    --dark-subtle: #131313;
+    --text-primary: rgba(255,255,255,0.88);
+    --text-secondary: rgba(255,255,255,0.45);
+    --text-tertiary: rgba(255,255,255,0.22);
+    --border: rgba(255,255,255,0.06);
+    --border-gold: rgba(201,169,110,0.2);
+  }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
+
   body {
-    background: #070707;
-    overflow: hidden;
+    background: var(--dark);
+    color: var(--text-primary);
     font-family: 'DM Sans', sans-serif;
-    color: white;
-    width: 100vw;
-    height: 100vh;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
   }
 
-  #canvas-container {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
+  ::selection { background: rgba(201,169,110,0.3); color: white; }
 
-  canvas { display: block; width: 100%; height: 100%; }
-
-  /* ── Top Bar ── */
-  .top-bar {
-    position: absolute;
+  /* ── Nav ── */
+  nav {
+    position: fixed;
     top: 0; left: 0; right: 0;
-    padding: 24px 32px;
+    z-index: 100;
+    padding: 20px 40px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    z-index: 10;
-    pointer-events: none;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
-  }
-
-  .logo {
-    font-family: 'Playfair Display', serif;
-    font-size: 22px;
-    font-weight: 600;
-    color: #c9a96e;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-
-  .logo-sub {
-    font-size: 11px;
-    font-weight: 300;
-    color: rgba(255,255,255,0.4);
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  .badge {
-    background: rgba(201,169,110,0.12);
-    border: 1px solid rgba(201,169,110,0.25);
-    color: #c9a96e;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 6px 14px;
-    border-radius: 2px;
-  }
-
-  /* ── AI Render Button ── */
-  .ai-render-btn {
-    position: absolute;
-    bottom: 28px;
-    left: 32px;
-    z-index: 10;
-    background: linear-gradient(135deg, rgba(201,169,110,0.25), rgba(201,169,110,0.1));
-    border: 1px solid rgba(201,169,110,0.4);
-    color: #c9a96e;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 12px 24px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(8px);
-  }
-
-  .ai-render-btn:hover {
-    background: linear-gradient(135deg, rgba(201,169,110,0.4), rgba(201,169,110,0.2));
-    border-color: rgba(201,169,110,0.6);
-    color: #e0c88a;
-  }
-
-  .ai-render-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  .ai-render-btn .spinner {
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border: 2px solid rgba(201,169,110,0.3);
-    border-top-color: #c9a96e;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-right: 8px;
-    vertical-align: middle;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── AI Render Result Overlay ── */
-  .render-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 300;
-    background: rgba(0,0,0,0.92);
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.4s ease;
+    transition: all 0.4s ease;
   }
 
-  .render-overlay.visible {
-    opacity: 1;
-    pointer-events: all;
-  }
-
-  .render-overlay img {
-    max-width: 90vw;
-    max-height: 75vh;
-    border-radius: 6px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-
-  .render-actions {
-    margin-top: 20px;
-    display: flex;
-    gap: 12px;
-  }
-
-  .render-action-btn {
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.7);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 10px 24px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .render-action-btn:hover {
-    background: rgba(255,255,255,0.15);
-    color: white;
-  }
-
-  .render-action-btn.primary {
-    background: rgba(201,169,110,0.2);
-    border-color: rgba(201,169,110,0.4);
-    color: #c9a96e;
-  }
-
-  .render-action-btn.primary:hover {
-    background: rgba(201,169,110,0.35);
-  }
-
-  .render-label {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    color: rgba(255,255,255,0.3);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  /* ── Mode Selector ── */
-  .mode-bar {
-    position: absolute;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 2px;
-    z-index: 10;
-    background: rgba(10,10,10,0.88);
+  nav.scrolled {
+    background: rgba(10,10,10,0.92);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 4px;
+    padding: 14px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  .nav-cta {
+    padding: 8px 20px !important;
+    border: 1px solid var(--border-gold) !important;
+    color: var(--gold) !important;
+    border-radius: 2px;
+    transition: all 0.3s !important;
+  }
+
+  .nav-cta:hover {
+    background: var(--gold-dim) !important;
+    border-color: var(--gold) !important;
+  }
+
+  .nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    background: none;
+    border: none;
     padding: 4px;
   }
 
-  .mode-btn {
-    padding: 10px 24px;
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.3);
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    border-radius: 2px;
-    transition: all 0.3s ease;
-    border-bottom: 2px solid transparent;
+  .nav-toggle span {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: var(--text-secondary);
   }
 
-  .mode-btn:hover { color: rgba(255,255,255,0.6); }
-
-  .mode-btn.active {
-    background: rgba(255,255,255,0.06);
-    color: #c9a96e;
-    border-bottom-color: #c9a96e;
-  }
-
-  /* ── Controls ── */
-  .controls-hint {
-    position: absolute;
-    bottom: 28px;
-    right: 32px;
-    z-index: 10;
-    pointer-events: none;
-    text-align: right;
-  }
-
-  /* ── Sun/Time Control ── */
-  .sun-control {
-    position: absolute;
-    top: 80px;
-    right: 24px;
-    z-index: 10;
-    background: rgba(0,0,0,0.75);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(201,169,110,0.2);
-    border-radius: 8px;
-    padding: 16px 20px;
-    min-width: 240px;
-  }
-
-  .sun-control-title {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #c9a96e;
-    margin-bottom: 12px;
-  }
-
-  .sun-mode-toggle {
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 600px;
     display: flex;
-    gap: 0;
-    margin-bottom: 12px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 4px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     overflow: hidden;
   }
 
-  .sun-mode-btn {
-    flex: 1;
-    padding: 6px 10px;
-    background: transparent;
-    border: none;
-    color: rgba(255,255,255,0.35);
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s ease;
-  }
-
-  .sun-mode-btn.active {
-    background: rgba(201,169,110,0.2);
-    color: #c9a96e;
-  }
-
-  .time-display {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 28px;
-    font-weight: 300;
-    color: white;
-    text-align: center;
-    margin-bottom: 4px;
-    letter-spacing: 2px;
-  }
-
-  .time-details {
-    font-size: 10px;
-    color: rgba(255,255,255,0.3);
-    text-align: center;
-    margin-bottom: 10px;
-    letter-spacing: 0.5px;
-  }
-
-  .time-slider {
-    width: 100%;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 3px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-    margin-bottom: 6px;
-  }
-
-  .time-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #c9a96e;
-    cursor: pointer;
-    box-shadow: 0 0 8px rgba(201,169,110,0.5);
-  }
-
-  .time-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9px;
-    color: rgba(255,255,255,0.2);
-    letter-spacing: 0.5px;
-  }
-
-  .sun-info {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-    font-size: 10px;
-    color: rgba(255,255,255,0.25);
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .control-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-bottom: 5px;
-  }
-
-  .key {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 26px;
-    height: 26px;
-    padding: 0 6px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 4px;
-    color: rgba(255,255,255,0.35);
-    font-size: 10px;
-    font-weight: 500;
-    margin: 0 2px;
-  }
-
-  .control-label {
-    color: rgba(255,255,255,0.2);
-    font-size: 10px;
-    letter-spacing: 1px;
-    margin-left: 8px;
-    min-width: 40px;
-  }
-
-  /* ── Loading ── */
-  .loading-overlay {
+  .hero-bg {
     position: absolute;
     inset: 0;
-    background: #070707;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(201,169,110,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(201,169,110,0.04) 0%, transparent 50%),
+      var(--dark);
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+    padding: 0 24px;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--border-gold);
+    padding: 6px 18px;
+    margin-bottom: 40px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.2s;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(52px, 8vw, 96px);
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.4s;
+  }
+
+  .hero-subtitle {
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.6s;
+  }
+
+  .hero-line {
+    width: 48px;
+    height: 1px;
+    background: var(--gold);
+    margin: 0 auto 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.7s;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.9;
+    max-width: 560px;
+    margin: 0 auto 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 0.8s;
+  }
+
+  .hero-cta {
+    display: inline-block;
+    padding: 14px 40px;
+    border: 1px solid var(--border-gold);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: all 0.4s ease;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards 1s;
+  }
+
+  .hero-cta:hover { background: var(--gold); color: var(--dark); }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    z-index: 200;
-    transition: opacity 0.8s ease;
-  }
-
-  .loading-overlay.hidden {
+    gap: 8px;
     opacity: 0;
-    pointer-events: none;
+    animation: fadeUp 0.8s ease forwards 1.2s;
   }
 
-  .loading-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 36px;
-    font-weight: 700;
-    color: #c9a96e;
-    letter-spacing: 6px;
+  .hero-scroll span {
+    font-size: 9px;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    margin-bottom: 6px;
+    color: var(--text-tertiary);
   }
 
-  .loading-sub {
-    font-size: 12px;
-    font-weight: 300;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 4px;
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Sections ── */
+  section { padding: 120px 40px; position: relative; }
+
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
-    margin-bottom: 40px;
-  }
-
-  .progress-track {
-    width: 240px;
-    height: 2px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 1px;
-    overflow: hidden;
+    color: var(--gold);
     margin-bottom: 16px;
   }
 
-  .progress-fill {
-    height: 100%;
-    background: #c9a96e;
-    width: 0%;
-    transition: width 0.3s ease;
-    border-radius: 1px;
-  }
-
-  .loading-percent {
-    font-size: 11px;
-    color: rgba(255,255,255,0.25);
-    letter-spacing: 2px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* ── Welcome ── */
-  .welcome-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(5,5,5,0.85);
-    backdrop-filter: blur(20px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    transition: opacity 0.6s ease;
-  }
-
-  .welcome-overlay.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .welcome-title {
+  .section-title {
     font-family: 'Playfair Display', serif;
-    font-size: 42px;
-    font-weight: 700;
-    color: #c9a96e;
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .welcome-sub {
-    font-size: 13px;
-    font-weight: 300;
-    color: rgba(255,255,255,0.35);
-    letter-spacing: 5px;
-    text-transform: uppercase;
-    margin-bottom: 48px;
-  }
-
-  .enter-btn {
-    padding: 14px 48px;
-    background: transparent;
-    border: 1px solid rgba(201,169,110,0.35);
-    color: #c9a96e;
-    font-size: 12px;
+    font-size: clamp(32px, 4vw, 48px);
     font-weight: 500;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    border-radius: 2px;
-    transition: all 0.3s ease;
+    color: var(--text-primary);
+    line-height: 1.2;
+    margin-bottom: 24px;
   }
 
-  .enter-btn:hover {
-    background: rgba(201,169,110,0.12);
-    border-color: #c9a96e;
+  .section-desc {
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.9;
+    max-width: 600px;
   }
 
-  .welcome-hint {
-    margin-top: 28px;
-    color: rgba(255,255,255,0.15);
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── Vision ── */
+  .vision-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    margin-top: 60px;
+  }
+
+  .vision-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .stat-card {
+    padding: 28px;
+    background: var(--dark-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 500;
+    color: var(--gold);
+    margin-bottom: 2px;
+  }
+
+  .stat-unit { font-size: 14px; font-weight: 300; color: var(--gold-light); }
+
+  .stat-label {
     font-size: 11px;
-    letter-spacing: 1px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-top: 8px;
   }
 
-  /* ── Crosshair ── */
-  .crosshair {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 5;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s ease;
+  /* ── Pillars ── */
+  .pillars { background: var(--dark-subtle); }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 60px;
   }
 
-  .crosshair.visible { opacity: 0.3; }
+  .pillar-card {
+    padding: 40px 28px;
+    background: var(--dark-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
 
-  .crosshair::before, .crosshair::after {
+  .pillar-card::before {
     content: '';
     position: absolute;
-    background: #c9a96e;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
   }
 
-  .crosshair::before {
-    width: 16px; height: 1px;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+  .pillar-card:hover::before { transform: scaleX(1); }
+  .pillar-card:hover { border-color: var(--border-gold); transform: translateY(-4px); }
+
+  .pillar-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 48px;
+    font-weight: 400;
+    color: var(--text-tertiary);
+    line-height: 1;
+    margin-bottom: 24px;
   }
 
-  .crosshair::after {
-    width: 1px; height: 16px;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+  .pillar-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 16px;
   }
 
-  /* ── Virtual Joystick (mobile only) ── */
-  .joystick-zone {
-    display: none;
-    position: absolute;
-    bottom: 100px;
-    left: 24px;
-    width: 140px;
-    height: 140px;
-    z-index: 20;
-    pointer-events: all;
+  .pillar-desc {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.8;
   }
 
-  .joystick-base {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(201,169,110,0.2);
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+  .pillar-features {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
   }
 
-  .joystick-thumb {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: rgba(201,169,110,0.25);
-    border: 1px solid rgba(201,169,110,0.45);
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    transition: none;
-  }
-
-  /* ── Fly mode vertical buttons (mobile) ── */
-  .fly-vertical-btns {
-    display: none;
-    position: absolute;
-    bottom: 100px;
-    right: 24px;
-    z-index: 20;
-    flex-direction: column;
+  .pillar-feature {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    padding: 6px 0;
+    display: flex;
+    align-items: center;
     gap: 8px;
   }
 
-  .fly-vertical-btn {
-    width: 52px;
-    height: 52px;
+  .pillar-feature::before {
+    content: '';
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(201,169,110,0.2);
-    color: rgba(201,169,110,0.6);
-    font-size: 20px;
+    background: var(--gold);
+    flex-shrink: 0;
+  }
+
+  /* ── Location ── */
+  .location-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 60px;
+    align-items: start;
+  }
+
+  .location-detail {
+    display: flex;
+    gap: 16px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .location-detail:last-child { border-bottom: none; }
+
+  .location-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gold-dim);
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
+    flex-shrink: 0;
+    color: var(--gold);
+    font-size: 14px;
   }
 
-  .fly-vertical-btn:active {
-    background: rgba(201,169,110,0.2);
-    border-color: rgba(201,169,110,0.5);
+  .location-detail-title { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
+  .location-detail-desc { font-size: 13px; font-weight: 300; color: var(--text-secondary); line-height: 1.6; }
+
+  /* ── Walkthrough CTA ── */
+  .walkthrough-cta {
+    background:
+      radial-gradient(ellipse at 50% 50%, rgba(201,169,110,0.06) 0%, transparent 60%),
+      var(--dark-subtle);
+    text-align: center;
+    padding: 140px 40px;
   }
 
-  /* ── Mobile responsive ── */
-  @media (max-width: 768px) {
-    .top-bar {
-      padding: 16px 16px;
-    }
+  .walkthrough-cta .section-desc { margin: 0 auto 48px; text-align: center; }
 
-    .logo {
-      font-size: 16px;
-      letter-spacing: 2px;
-    }
-
-    .logo-sub {
-      font-size: 9px;
-      letter-spacing: 3px;
-    }
-
-    .badge {
-      font-size: 8px;
-      padding: 4px 10px;
-    }
-
-    .mode-bar {
-      bottom: 20px;
-      padding: 3px;
-    }
-
-    .mode-btn {
-      padding: 8px 14px;
-      font-size: 9px;
-      letter-spacing: 1px;
-    }
-
-    .controls-hint {
-      display: none;
-    }
-
-    .sun-control {
-      top: 60px;
-      right: 12px;
-      min-width: 200px;
-      padding: 12px 14px;
-    }
-
-    .sun-control-title {
-      font-size: 9px;
-    }
-
-    .time-display {
-      font-size: 22px;
-    }
-
-    .loading-title, .welcome-title {
-      font-size: 28px;
-      letter-spacing: 4px;
-    }
-
-    .loading-sub, .welcome-sub {
-      font-size: 10px;
-      letter-spacing: 3px;
-    }
-
-    .welcome-hint {
-      font-size: 10px;
-    }
-
-    .joystick-zone {
-      display: block;
-    }
+  .walkthrough-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 48px;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: all 0.4s ease;
   }
 
-  @media (max-width: 480px) {
-    .mode-btn {
-      padding: 7px 10px;
-      font-size: 8px;
-    }
+  .walkthrough-btn:hover { background: var(--gold); color: var(--dark); }
 
-    .sun-control {
-      min-width: 170px;
-      padding: 10px 12px;
+  .walkthrough-btn svg { width: 18px; height: 18px; transition: transform 0.3s; }
+  .walkthrough-btn:hover svg { transform: translateX(4px); }
+
+  /* ── Investment ── */
+  .invest-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 60px;
+    align-items: start;
+  }
+
+  .invest-highlights { display: flex; flex-direction: column; gap: 24px; }
+
+  .invest-highlight {
+    padding: 28px;
+    background: var(--dark-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .invest-highlight-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background: var(--gold-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+    color: var(--gold);
+  }
+
+  .invest-highlight-title { font-size: 14px; font-weight: 500; color: var(--text-primary); margin-bottom: 6px; }
+  .invest-highlight-desc { font-size: 13px; font-weight: 300; color: var(--text-secondary); line-height: 1.7; }
+
+  /* ── Contact ── */
+  .contact {
+    background: var(--dark-subtle);
+    text-align: center;
+    padding: 100px 40px;
+  }
+
+  .contact-email {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 3vw, 32px);
+    color: var(--gold);
+    text-decoration: none;
+    transition: opacity 0.3s;
+  }
+
+  .contact-email:hover { opacity: 0.7; }
+
+  /* ── Footer ── */
+  footer {
+    padding: 40px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: var(--dark);
+  }
+
+  .footer-text { font-size: 11px; color: var(--text-tertiary); letter-spacing: 0.1em; }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 12px;
+  }
+
+  .footer-links a {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .footer-links a:hover { color: var(--gold); }
+
+  /* ── Scroll reveal ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── Mobile ── */
+  @media (max-width: 900px) {
+    nav { padding: 16px 20px; }
+    nav.scrolled { padding: 12px 20px; }
+    .nav-links { display: none; }
+    .nav-links.open {
+      display: flex;
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      flex-direction: column;
+      background: rgba(10,10,10,0.96);
+      backdrop-filter: blur(20px);
+      padding: 24px 20px;
+      gap: 20px;
+      border-bottom: 1px solid var(--border);
     }
+    .nav-toggle { display: flex; }
+    section { padding: 80px 20px; }
+    .vision-grid, .location-grid, .invest-grid { grid-template-columns: 1fr; gap: 48px; }
+    .pillars-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .walkthrough-cta { padding: 100px 20px; }
+  }
+
+  @media (max-width: 600px) {
+    .pillars-grid { grid-template-columns: 1fr; }
+    .vision-stats { gap: 16px; }
+    .stat-number { font-size: 28px; }
+    .pillar-card { padding: 28px 20px; }
   }
 </style>
 </head>
 <body>
 
-<div id="canvas-container">
-  <!-- Loading -->
-  <div class="loading-overlay" id="loading">
-    <div class="loading-title">Sanctum</div>
-    <div class="loading-sub">Recovery Club · Bali</div>
-    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-    <div class="loading-percent" id="loading-percent">0%</div>
+<nav id="nav">
+  <a href="/" class="nav-logo">Sanctum</a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#vision">Vision</a></li>
+    <li><a href="#pillars">Concept</a></li>
+    <li><a href="#location">Location</a></li>
+    <li><a href="#walkthrough">3D Walkthrough</a></li>
+    <li><a href="#investment">Investment</a></li>
+    <li><a href="#contact" class="nav-cta">Get in Touch</a></li>
+  </ul>
+  <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Investor Preview</div>
+    <h1 class="hero-title">Sanctum</h1>
+    <p class="hero-subtitle">Recovery Club &middot; Bali</p>
+    <div class="hero-line"></div>
+    <p class="hero-desc">
+      A premium wellness destination set within Bali's lush river valley.
+      World-class gym, thermal recovery, farm-to-table dining, and private villas —
+      all on 10,000m&sup2; of untouched riverfront.
+    </p>
+    <a href="#vision" class="hero-cta">Discover the Vision</a>
   </div>
-
-  <!-- Welcome -->
-  <div class="welcome-overlay hidden" id="welcome">
-    <div class="welcome-title">Sanctum</div>
-    <div class="welcome-sub">Recovery Club · Bali</div>
-    <button class="enter-btn" id="enter-btn">Enter Walkthrough</button>
-    <div class="welcome-hint" id="welcome-hint">WASD to move · Mouse to look · Scroll to zoom</div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
   </div>
+</section>
 
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div>
-      <div class="logo">Sanctum</div>
-      <div class="logo-sub">Recovery Club · Bali</div>
-    </div>
-    <div class="badge">3D Walkthrough</div>
-  </div>
-
-  <!-- Mode Bar -->
-  <div class="mode-bar">
-    <button class="mode-btn active" data-mode="orbit">Orbit View</button>
-    <button class="mode-btn" data-mode="fly">Fly Mode</button>
-  </div>
-
-  <!-- Sun/Time Control -->
-  <div class="sun-control" id="sun-control">
-    <div class="sun-control-title">☀ Sun Position</div>
-    <div class="sun-mode-toggle">
-      <button class="sun-mode-btn active" data-sun="live">Live</button>
-      <button class="sun-mode-btn" data-sun="manual">Manual</button>
-    </div>
-    <div class="time-display" id="time-display">14:30</div>
-    <div class="time-details" id="time-details">WITA · Elev 68° · West</div>
-    <input type="range" class="time-slider" id="time-slider" min="300" max="1140" value="870" step="5">
-    <div class="time-labels">
-      <span>5:00</span>
-      <span>12:00</span>
-      <span>19:00</span>
-    </div>
-    <div class="sun-info">
-      <span id="sun-rise">↑ 06:12</span>
-      <span id="sun-set">↓ 18:22</span>
-    </div>
-  </div>
-
-  <!-- Controls -->
-  <div class="controls-hint" id="controls-hint">
-    <div class="control-row orbit-hint">
-      <span class="key">Mouse</span>
-      <span class="control-label">Look</span>
-    </div>
-    <div class="control-row orbit-hint">
-      <span class="key">Scroll</span>
-      <span class="control-label">Zoom</span>
-    </div>
-    <div class="control-row fly-hint" style="display:none;">
-      <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
-      <span class="control-label">Move</span>
-    </div>
-    <div class="control-row fly-hint" style="display:none;">
-      <span class="key">Space</span> <span class="key">Shift</span>
-      <span class="control-label">Up / Down</span>
-    </div>
-    <div class="control-row fly-hint" style="display:none;">
-      <span class="key">Mouse</span>
-      <span class="control-label">Look</span>
-    </div>
-  </div>
-
-  <!-- Crosshair -->
-  <div class="crosshair" id="crosshair"></div>
-
-  <!-- Virtual Joystick (mobile) -->
-  <div class="joystick-zone" id="joystick-zone">
-    <div class="joystick-base">
-      <div class="joystick-thumb" id="joystick-thumb"></div>
+<section id="vision">
+  <div class="section-inner">
+    <div class="vision-grid">
+      <div class="reveal">
+        <div class="section-label">The Vision</div>
+        <h2 class="section-title">Where Performance<br>Meets Nature</h2>
+        <p class="section-desc">
+          Sanctum is more than a gym. It's a destination built around the idea that peak physical
+          performance and deep recovery are inseparable — and that both are elevated by an extraordinary
+          natural setting.
+        </p>
+        <p class="section-desc" style="margin-top: 20px;">
+          Set on a terraced riverfront site in Tabanan, the club integrates training, thermal
+          recovery, nourishment, and rest into a single cohesive experience surrounded by tropical
+          forest, natural waterfalls, and volcanic stone.
+        </p>
+      </div>
+      <div class="vision-stats reveal" style="transition-delay: 0.15s;">
+        <div class="stat-card">
+          <div class="stat-number">10,000</div>
+          <div class="stat-unit">m&sup2;</div>
+          <div class="stat-label">Total Site Area</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">4</div>
+          <div class="stat-unit">pillars</div>
+          <div class="stat-label">Integrated Experience</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">15</div>
+          <div class="stat-unit">min</div>
+          <div class="stat-label">From Canggu</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">365</div>
+          <div class="stat-unit">days</div>
+          <div class="stat-label">Tropical Climate</div>
+        </div>
+      </div>
     </div>
   </div>
+</section>
 
-  <!-- Fly mode up/down buttons (mobile) -->
-  <div class="fly-vertical-btns" id="fly-vertical-btns">
-    <div class="fly-vertical-btn" id="fly-up-btn">↑</div>
-    <div class="fly-vertical-btn" id="fly-down-btn">↓</div>
-  </div>
+<div class="divider"></div>
 
-  <!-- AI Render Button (hidden for now) -->
-  <button class="ai-render-btn" id="ai-render-btn" style="display:none;">✦ AI Render</button>
-
-  <!-- AI Render Result -->
-  <div class="render-overlay" id="render-overlay">
-    <div class="render-label">AI Photorealistic Render</div>
-    <img id="render-result" src="" alt="AI Render">
-    <div class="render-actions">
-      <button class="render-action-btn" id="render-close">Close</button>
-      <button class="render-action-btn primary" id="render-download">Download</button>
+<section class="pillars" id="pillars">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">The Concept</div>
+      <h2 class="section-title">Four Pillars of Sanctum</h2>
+      <p class="section-desc">Each element designed to complement the others — creating a destination members return to daily.</p>
+    </div>
+    <div class="pillars-grid">
+      <div class="pillar-card reveal" style="transition-delay: 0.1s;">
+        <div class="pillar-number">01</div>
+        <div class="pillar-title">Gym</div>
+        <p class="pillar-desc">A world-class training facility designed for serious athletes and wellness seekers alike. Premium equipment in an open-air tropical setting.</p>
+        <div class="pillar-features">
+          <div class="pillar-feature">Strength & conditioning zones</div>
+          <div class="pillar-feature">Functional training area</div>
+          <div class="pillar-feature">Open-air tropical design</div>
+          <div class="pillar-feature">Personal training suites</div>
+        </div>
+      </div>
+      <div class="pillar-card reveal" style="transition-delay: 0.2s;">
+        <div class="pillar-number">02</div>
+        <div class="pillar-title">Recovery</div>
+        <p class="pillar-desc">A thermal circuit integrated into the natural landscape. Multiple sauna types, cold plunge pools, and a waterfall recovery area.</p>
+        <div class="pillar-features">
+          <div class="pillar-feature">Finnish & infrared saunas</div>
+          <div class="pillar-feature">Cold plunge pools</div>
+          <div class="pillar-feature">Natural waterfall area</div>
+          <div class="pillar-feature">Contrast therapy circuit</div>
+        </div>
+      </div>
+      <div class="pillar-card reveal" style="transition-delay: 0.3s;">
+        <div class="pillar-number">03</div>
+        <div class="pillar-title">Restaurant</div>
+        <p class="pillar-desc">Farm-to-table dining with a focus on nutrition-forward cuisine. Locally sourced ingredients designed to fuel performance and recovery.</p>
+        <div class="pillar-features">
+          <div class="pillar-feature">Nutrition-optimized menus</div>
+          <div class="pillar-feature">Locally sourced ingredients</div>
+          <div class="pillar-feature">River-view terrace dining</div>
+          <div class="pillar-feature">Juice bar & smoothie station</div>
+        </div>
+      </div>
+      <div class="pillar-card reveal" style="transition-delay: 0.4s;">
+        <div class="pillar-number">04</div>
+        <div class="pillar-title">Villas</div>
+        <p class="pillar-desc">Private river-view villas for immersive multi-day wellness retreats. Wake up to the sound of water and train steps from your door.</p>
+        <div class="pillar-features">
+          <div class="pillar-feature">Private river-view suites</div>
+          <div class="pillar-feature">Integrated with club facilities</div>
+          <div class="pillar-feature">Retreat & membership packages</div>
+          <div class="pillar-feature">Natural ventilation design</div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
+</section>
 
-<!-- Three.js -->
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
-    "three/addons/": "https://unpkg.com/three@0.162.0/examples/jsm/"
-  }
-}
-</script>
+<div class="divider"></div>
 
-<script type="module">
-import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+<section id="location">
+  <div class="section-inner">
+    <div class="location-grid">
+      <div class="reveal">
+        <div class="section-label">The Location</div>
+        <h2 class="section-title">Buwit, Tabanan</h2>
+        <p class="section-desc" style="margin-top: 4px; font-family: 'Playfair Display', serif; font-size: 18px; color: var(--gold); font-weight: 400; font-style: italic; margin-bottom: 20px;">Bali's Emerging Wellness Corridor</p>
+        <p class="section-desc">
+          Positioned at the intersection of accessibility and seclusion. Close enough to
+          Bali's expat hubs to draw daily members, remote enough to feel like an escape.
+          The terraced riverfront site offers a natural setting that no competitor can replicate.
+        </p>
+      </div>
+      <div class="reveal" style="transition-delay: 0.15s;">
+        <div class="location-detail">
+          <div class="location-icon">&#9678;</div>
+          <div>
+            <div class="location-detail-title">15 Minutes from Canggu</div>
+            <div class="location-detail-desc">Direct access to Bali's largest expat and digital nomad community with high disposable income and wellness spending habits.</div>
+          </div>
+        </div>
+        <div class="location-detail">
+          <div class="location-icon">&#9672;</div>
+          <div>
+            <div class="location-detail-title">10,000m&sup2; Riverfront</div>
+            <div class="location-detail-desc">Terraced site along a natural river valley with existing waterfalls, mature tropical vegetation, and volcanic stone formations.</div>
+          </div>
+        </div>
+        <div class="location-detail">
+          <div class="location-icon">&#9656;</div>
+          <div>
+            <div class="location-detail-title">Tabanan Growth Corridor</div>
+            <div class="location-detail-desc">Bali's next development frontier. Rapidly improving infrastructure, lower land costs, with significant upside potential.</div>
+          </div>
+        </div>
+        <div class="location-detail">
+          <div class="location-icon">&#10038;</div>
+          <div>
+            <div class="location-detail-title">Natural Competitive Moat</div>
+            <div class="location-detail-desc">The riverfront topography, waterfalls, and surrounding jungle create a structural advantage that cannot be replicated on flat commercial land.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-// ─── State ───
-let mode = 'orbit'; // orbit | walk | fly
-const keys = {};
-let isPointerLocked = false;
-const euler = new THREE.Euler(0, 0, 0, 'YXZ');
-const MOVE_SPEED = 0.15;
-const FLY_SPEED = 0.25;
-const LOOK_SPEED = 0.002;
-let modelCenter = new THREE.Vector3();
-let modelSize = 0;
-let modelBBox = null;
-let modelRef = null; // reference to loaded model for raycasting
-let walkableMeshes = []; // ground surfaces the player can walk on
-let obstacleMeshes = []; // walls, objects, trees to collide with
+<div class="divider"></div>
 
-// ─── Mobile State ───
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-let joystickActive = false;
-let joystickTouchId = null;
-let joystickInput = { x: 0, y: 0 };
-let flyUpPressed = false;
-let flyDownPressed = false;
+<section class="walkthrough-cta" id="walkthrough">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Interactive Experience</div>
+      <h2 class="section-title">Explore the Design</h2>
+      <p class="section-desc">
+        Step inside Sanctum with our interactive 3D walkthrough. Orbit the site,
+        fly through the spaces, and experience the scale and setting firsthand.
+      </p>
+      <a href="/walkthrough" class="walkthrough-btn">
+        Enter 3D Walkthrough
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
 
-// Material classification for walkable surfaces
-// Only materials that are clearly ground paths, floors, and decking
-const WALKABLE_MATERIALS = new Set([
-  // Paths and pavers
-  '[Stone_Pavers_Walk]',
-  'cluster_60x120_taupe_06_abeff', 'cluster_60x120_taupe_06_abeff1',
-  // Concrete (floors, paths)
-  'Concrete_06_1K',
-  // Wood decking
-  'MADEIRA 1', 'MADEIRA 2', 'MADEIRA 001',
-  // Plaster floors
-  'Plaster_03_1K',
-  '<Beige>2',
-  // Generic materials that may include floors (filtered by normal direction)
-  'Material', 'Material3', 'Material4',
-  'Material11', 'Material14',
-  'Material16', 'Material26',
-  'Materialasdfasdfasdfsdfasdw',
-  'bronze2',
-  'spec_#1b1b1b_50_Default_wf_91_BL3419',
-  '*29',
-  'Material57',
-]);
+<div class="divider"></div>
 
-// Materials that are NOT walkable (grass, water, trees, roofs)
-const BLOCKED_MATERIALS = new Set([
-  '[Vegetation_Grass1]1', '[Vegetation_Grass1]2', '[Vegetation_Grass1]3',
-  '[Water Deep]1', '[Water Deep]2',
-  '[Water_Sparkling]', '[Water_Sparkling]2', '[Water_Sparkling]3',
-  'Thatch or Straw 9815', 'Thatch or Straw 9815-v1', 'Thatch or Straw 9815-v2',
-  'Thatch or Straw 9815-v3', 'Thatch or Straw 9815-v4', 'Thatch or Straw 9815-v5',
-  'Thatch or Straw 9815-v6', 'Thatch or Straw 9815-v7', 'Thatch or Straw 9815-v8',
-  'coconut1', 'cocoanut_scrub', 'cocoanut_mat', 'coconut_test3_clean',
-  'Albizia saman 11gk copy',
-]);
+<section id="investment">
+  <div class="section-inner">
+    <div class="invest-grid">
+      <div class="reveal">
+        <div class="section-label">The Investment</div>
+        <h2 class="section-title">A Destination Asset<br>with Diversified Revenue</h2>
+        <p class="section-desc">
+          Sanctum generates income across multiple streams — membership fees, recovery services,
+          food & beverage, and villa stays — reducing dependency on any single source
+          and creating a resilient operating model.
+        </p>
+        <p class="section-desc" style="margin-top: 20px;">
+          The tenant model leases operational areas to experienced F&B and hospitality operators,
+          capturing rental income without the complexity of running every vertical in-house.
+        </p>
+      </div>
+      <div class="invest-highlights reveal" style="transition-delay: 0.15s;">
+        <div class="invest-highlight">
+          <div class="invest-highlight-icon">&#9670;</div>
+          <div>
+            <div class="invest-highlight-title">Diversified Revenue Streams</div>
+            <div class="invest-highlight-desc">Gym memberships, recovery sessions, restaurant revenue, and villa bookings create multiple independent income sources.</div>
+          </div>
+        </div>
+        <div class="invest-highlight">
+          <div class="invest-highlight-icon">&#9674;</div>
+          <div>
+            <div class="invest-highlight-title">Tenant-Operator Model</div>
+            <div class="invest-highlight-desc">F&B and hospitality areas leased to experienced operators, reducing operational risk and ensuring professional service delivery.</div>
+          </div>
+        </div>
+        <div class="invest-highlight">
+          <div class="invest-highlight-icon">&#9651;</div>
+          <div>
+            <div class="invest-highlight-title">Irreplicable Location</div>
+            <div class="invest-highlight-desc">The natural river setting, waterfalls, and mature vegetation create a structural competitive advantage that cannot be built or bought elsewhere.</div>
+          </div>
+        </div>
+        <div class="invest-highlight">
+          <div class="invest-highlight-icon">&#8853;</div>
+          <div>
+            <div class="invest-highlight-title">Growing Market Tailwind</div>
+            <div class="invest-highlight-desc">Bali's wellness tourism sector continues to expand, with an increasing population of high-income expats and health-conscious travelers.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
-// Raycasters for ground detection and collision
-const groundRaycaster = new THREE.Raycaster();
-const collisionRaycaster = new THREE.Raycaster();
-const EYE_HEIGHT = 1.7; // meters - human eye height above ground
-const COLLISION_DISTANCE = 0.4; // meters - how close we can get to walls
+<div class="divider"></div>
 
-// ─── DOM ───
-const container = document.getElementById('canvas-container');
-const loadingEl = document.getElementById('loading');
-const progressFill = document.getElementById('progress-fill');
-const loadingPercent = document.getElementById('loading-percent');
-const welcomeEl = document.getElementById('welcome');
-const enterBtn = document.getElementById('enter-btn');
-const crosshair = document.getElementById('crosshair');
+<section class="contact" id="contact">
+  <div class="reveal">
+    <div class="section-label" style="margin-bottom: 24px;">Get in Touch</div>
+    <h2 class="section-title" style="margin-bottom: 12px;">Interested in Sanctum?</h2>
+    <p class="section-desc" style="margin: 0 auto 40px; text-align: center;">
+      For investment inquiries, partnership opportunities, or to arrange a site visit.
+    </p>
+    <a href="mailto:jake.ena.studio@gmail.com" class="contact-email">jake.ena.studio@gmail.com</a>
+  </div>
+</section>
 
-// ─── Renderer (high quality) ───
-const renderer = new THREE.WebGLRenderer({ 
-  antialias: true,
-  powerPreference: 'high-performance',
-  preserveDrawingBuffer: true,
-});
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouchDevice ? 1.5 : 2));
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.9;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-container.appendChild(renderer.domElement);
+<footer>
+  <div class="footer-text">Sanctum Recovery Club &middot; Bali, Indonesia</div>
+  <div class="footer-links">
+    <a href="/walkthrough">3D Walkthrough</a>
+    <a href="#vision">Vision</a>
+    <a href="#pillars">Concept</a>
+    <a href="#contact">Contact</a>
+  </div>
+</footer>
 
-// ─── Scene ───
-const scene = new THREE.Scene();
-
-// ─── Environment Map (clean sky for reflections) ───
-const pmremGenerator = new THREE.PMREMGenerator(renderer);
-pmremGenerator.compileEquirectangularShader();
-
-const canvas = document.createElement('canvas');
-canvas.width = 512;
-canvas.height = 256;
-const ctx = canvas.getContext('2d');
-const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-gradient.addColorStop(0, '#4a8ab5');
-gradient.addColorStop(0.45, '#c4dde8');
-gradient.addColorStop(0.5, '#f5e6d0');
-gradient.addColorStop(1.0, '#3a5a2a');
-ctx.fillStyle = gradient;
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-const skyTexture = new THREE.CanvasTexture(canvas);
-skyTexture.mapping = THREE.EquirectangularReflectionMapping;
-const envMap = pmremGenerator.fromEquirectangular(skyTexture).texture;
-scene.environment = envMap;
-scene.background = envMap;
-pmremGenerator.dispose();
-
-// ─── Camera ───
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 2000);
-camera.position.set(0, 5, 10);
-
-// ─── Orbit Controls (default mode) ───
-const orbitControls = new OrbitControls(camera, renderer.domElement);
-orbitControls.enableDamping = true;
-orbitControls.dampingFactor = 0.05;
-orbitControls.screenSpacePanning = true;
-orbitControls.maxPolarAngle = Math.PI * 0.85;
-orbitControls.minDistance = 0.5;
-orbitControls.maxDistance = 500;
-orbitControls.target.set(0, 0, 0);
-
-// ─── Lighting (physically-based tropical afternoon) ───
-
-// Soft ambient — the environment map does most of the ambient work now
-const ambient = new THREE.AmbientLight('#e8dcc8', 0.3);
-scene.add(ambient);
-
-// Hemisphere — sky bounce vs ground bounce
-const hemi = new THREE.HemisphereLight('#87ceeb', '#4a6741', 0.4);
-scene.add(hemi);
-
-// Main sun — warm afternoon light from the west
-const sun = new THREE.DirectionalLight('#fff0d4', 2.0);
-sun.position.set(30, 50, 20);
-sun.castShadow = true;
-sun.shadow.mapSize.set(4096, 4096);
-sun.shadow.camera.left = -50;
-sun.shadow.camera.right = 50;
-sun.shadow.camera.top = 50;
-sun.shadow.camera.bottom = -50;
-sun.shadow.camera.near = 0.5;
-sun.shadow.camera.far = 200;
-sun.shadow.bias = -0.0002;
-sun.shadow.normalBias = 0.02;
-sun.shadow.radius = 3; // Soft shadow edges
-scene.add(sun);
-
-// Warm fill from opposite side (bounced sunlight)
-const fill = new THREE.DirectionalLight('#ffd4a8', 0.6);
-fill.position.set(-20, 20, -10);
-scene.add(fill);
-
-// Warm golden hour accent light (low angle)
-const goldenLight = new THREE.DirectionalLight('#ffb366', 0.4);
-goldenLight.position.set(40, 10, 30);
-scene.add(goldenLight);
-
-// Subtle blue sky bounce from above
-const skyBounce = new THREE.DirectionalLight('#a0c8e0', 0.3);
-skyBounce.position.set(0, 60, 0);
-scene.add(skyBounce);
-
-// ─── Ground plane ───
-const groundGeo = new THREE.PlaneGeometry(200, 200);
-const groundMat = new THREE.MeshStandardMaterial({
-  color: '#1a1c1e',
-  roughness: 0.95,
-  metalness: 0.0,
-});
-const ground = new THREE.Mesh(groundGeo, groundMat);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = -0.01;
-ground.receiveShadow = true;
-scene.add(ground);
-
-// ─── Load Model ───
-const loader = new GLTFLoader();
-
-// Draco decoder (for Draco-compressed models)
-const dracoLoader = new DRACOLoader();
-dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-loader.setDRACOLoader(dracoLoader);
-
-// Meshopt decoder (for meshopt-compressed models)
-loader.setMeshoptDecoder(MeshoptDecoder);
-
-// Model URL — served from Supabase Storage (public bucket)
-const MODEL_URL = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models/sanctum-optimized.glb';
-
-loader.load(
-  MODEL_URL,
-  (gltf) => {
-    const model = gltf.scene;
-
-    // Compute bounding box
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
-
-    modelBBox = box;
-    modelCenter.copy(center);
-    modelSize = Math.max(size.x, size.y, size.z);
-
-    console.log('Model loaded:', {
-      min: { x: box.min.x.toFixed(3), y: box.min.y.toFixed(3), z: box.min.z.toFixed(3) },
-      max: { x: box.max.x.toFixed(3), y: box.max.y.toFixed(3), z: box.max.z.toFixed(3) },
-      size: { x: size.x.toFixed(3), y: size.y.toFixed(3), z: size.z.toFixed(3) },
-      center: { x: center.x.toFixed(3), y: center.y.toFixed(3), z: center.z.toFixed(3) },
-      maxDim: modelSize.toFixed(3)
-    });
-
-    // Enable shadows and classify meshes with enhanced PBR materials
-    model.traverse((child) => {
-      if (child.isMesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-
-        // Get material name(s) for classification
-        const materials = Array.isArray(child.material) ? child.material : [child.material];
-        let isWalkable = false;
-        let isBlocked = false;
-
-        materials.forEach(m => {
-          if (!m) return;
-          
-          if (m.name) {
-            if (WALKABLE_MATERIALS.has(m.name)) isWalkable = true;
-            if (BLOCKED_MATERIALS.has(m.name)) isBlocked = true;
-          }
-          
-          // Fix double-sided rendering for SketchUp exports
-          m.side = THREE.DoubleSide;
-          
-          // ── Fix SketchUp white base color blowout ──
-          // SketchUp exports set baseColorFactor to [1,1,1] even when textures provide the actual color.
-          // This causes blown-out highlights. If a texture map exists, we tint the base color
-          // down so the texture provides the color and the multiplier doesn't overbrighten.
-          if (m.map && m.color) {
-            const brightness = (m.color.r + m.color.g + m.color.b) / 3;
-            if (brightness > 0.95) {
-              m.color.setRGB(0.85, 0.85, 0.85);
-            }
-          }
-          
-          // Kill any emissive that wasn't intentional
-          if (m.emissive) {
-            m.emissive.setRGB(0, 0, 0);
-          }
-          m.emissiveIntensity = 0;
-          
-          // Apply environment map for reflections
-          m.envMap = envMap;
-          m.envMapIntensity = 0.35;
-          m.needsUpdate = true;
-          
-          // ── Material-specific PBR tweaks ──
-          const name = m.name || '';
-          
-          // Water — transparent, reflective
-          if (name.includes('Water') || name.includes('water')) {
-            m.transparent = true;
-            m.opacity = 0.7;
-            m.roughness = 0.05;
-            m.metalness = 0.1;
-            m.envMapIntensity = 1.5;
-            m.color = new THREE.Color('#2a8a9a');
-          }
-          // Metal / Bronze — reflective
-          else if (name.includes('bronze') || name.includes('Bronze') || name.includes('Brass') || name.includes('Metal')) {
-            m.roughness = 0.25;
-            m.metalness = 0.85;
-            m.envMapIntensity = 1.2;
-          }
-          // Wood decking
-          else if (name.includes('MADEIRA') || name.includes('madeira')) {
-            m.roughness = 0.65;
-            m.metalness = 0.0;
-            m.envMapIntensity = 0.3;
-          }
-          // Stone pavers
-          else if (name.includes('Stone_Pavers') || name.includes('cluster_60x120')) {
-            m.roughness = 0.75;
-            m.metalness = 0.0;
-            m.envMapIntensity = 0.2;
-          }
-          // Concrete
-          else if (name.includes('Concrete')) {
-            m.roughness = 0.8;
-            m.metalness = 0.0;
-            m.envMapIntensity = 0.15;
-          }
-          // Thatch roofing
-          else if (name.includes('Thatch') || name.includes('Straw')) {
-            m.roughness = 0.95;
-            m.metalness = 0.0;
-            m.envMapIntensity = 0.1;
-          }
-          // Vegetation / Grass
-          else if (name.includes('Vegetation') || name.includes('Grass')) {
-            m.roughness = 0.85;
-            m.metalness = 0.0;
-            m.envMapIntensity = 0.15;
-            // Slight translucency color boost
-            if (m.color) {
-              m.color.multiplyScalar(1.1);
-            }
-          }
-          // Coconut palms & tropical vegetation
-          else if (name.includes('coconut') || name.includes('cocoanut') || name.includes('folhas') || name.includes('tronco')) {
-            m.roughness = 0.75;
-            m.metalness = 0.0;
-            m.envMapIntensity = 0.08;
-            // Prevent foliage from glowing — darken the base color multiplier further
-            if (m.map && m.color) {
-              m.color.setRGB(0.75, 0.75, 0.75);
-            }
-          }
-          // Glass / Corrugated metal
-          else if (name.includes('Corrugated')) {
-            m.roughness = 0.3;
-            m.metalness = 0.7;
-            m.envMapIntensity = 0.8;
-          }
-          // Plaster
-          else if (name.includes('Plaster')) {
-            m.roughness = 0.85;
-            m.metalness = 0.0;
-            m.envMapIntensity = 0.1;
-          }
-          // Rock / cliff face — apply PBR maps
-          else if (name === 'Model001_Material14' || name.includes('Materialasdfasdf')) {
-            m.roughness = 0.85;
-            m.metalness = 0.0;
-            m.envMapIntensity = 0.25;
-            
-            // Load and apply PBR texture maps
-            const texLoader = new THREE.TextureLoader();
-            const storageBase = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models';
-            
-            // Normal map — fakes surface depth
-            texLoader.load(storageBase + '/rock_normal.jpg', (tex) => {
-              tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-              if (m.map) { tex.repeat.copy(m.map.repeat); tex.offset.copy(m.map.offset); }
-              m.normalMap = tex;
-              m.normalScale = new THREE.Vector2(1.5, 1.5);
-              m.needsUpdate = true;
-            });
-            
-            // Roughness map — surface variation
-            texLoader.load(storageBase + '/rock_rough.jpg', (tex) => {
-              tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-              if (m.map) { tex.repeat.copy(m.map.repeat); tex.offset.copy(m.map.offset); }
-              m.roughnessMap = tex;
-              m.roughness = 1.0;
-              m.needsUpdate = true;
-            });
-            
-            // AO map — darken crevices
-            texLoader.load(storageBase + '/rock_ao.jpg', (tex) => {
-              tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-              if (m.map) { tex.repeat.copy(m.map.repeat); tex.offset.copy(m.map.offset); }
-              m.aoMap = tex;
-              m.aoMapIntensity = 1.2;
-              m.needsUpdate = true;
-            });
-          }
-          // Default — slightly reflective
-          else {
-            m.roughness = Math.max(m.roughness || 0.5, 0.4);
-            m.metalness = Math.min(m.metalness || 0.0, 0.2);
-            m.envMapIntensity = 0.3;
-          }
-        });
-
-        if (isWalkable && !isBlocked) {
-          walkableMeshes.push(child);
-        }
-        // Everything is an obstacle for horizontal collision (walls, furniture, etc.)
-        obstacleMeshes.push(child);
-      }
-    });
-
-    modelRef = model;
-    console.log(`Walkable meshes: ${walkableMeshes.length}, Obstacle meshes: ${obstacleMeshes.length}`);
-
-    // Debug: find the Y range of walkable meshes in world space
-    let walkMinY = Infinity, walkMaxY = -Infinity;
-    walkableMeshes.forEach(mesh => {
-      const meshBox = new THREE.Box3().setFromObject(mesh);
-      if (meshBox.min.y < walkMinY) walkMinY = meshBox.min.y;
-      if (meshBox.max.y > walkMaxY) walkMaxY = meshBox.max.y;
-      // Log each walkable mesh's material and world Y
-      const matName = Array.isArray(mesh.material) ? mesh.material.map(m=>m.name).join(',') : mesh.material?.name;
-      console.log(`  Walkable: "${mesh.name}" mat="${matName}" worldY=[${meshBox.min.y.toFixed(3)}..${meshBox.max.y.toFixed(3)}]`);
-    });
-    console.log(`Walkable Y range: ${walkMinY.toFixed(3)} to ${walkMaxY.toFixed(3)}`);
-
-    scene.add(model);
-
-
-    // Position camera to see the whole model
-    const dist = modelSize * 1.2;
-    camera.position.set(
-      center.x + dist * 0.5,
-      center.y + dist * 0.4,
-      center.z + dist * 0.6
-    );
-    camera.lookAt(center);
-
-    // Update orbit target
-    orbitControls.target.copy(center);
-    orbitControls.update();
-
-    // Update sun position relative to model — afternoon angle
-    sun.position.set(center.x + modelSize * 0.8, center.y + modelSize * 1.2, center.z + modelSize * 0.4);
-    sun.target.position.copy(center);
-    scene.add(sun.target);
-    
-    // Update fill lights relative to model
-    fill.position.set(center.x - modelSize * 0.5, center.y + modelSize * 0.5, center.z - modelSize * 0.3);
-    goldenLight.position.set(center.x + modelSize * 0.6, center.y + modelSize * 0.1, center.z + modelSize * 0.5);
-    skyBounce.position.set(center.x, center.y + modelSize * 1.5, center.z);
-
-    // Update shadow camera to cover model
-    const shadowExtent = modelSize * 0.8;
-    sun.shadow.camera.left = -shadowExtent;
-    sun.shadow.camera.right = shadowExtent;
-    sun.shadow.camera.top = shadowExtent;
-    sun.shadow.camera.bottom = -shadowExtent;
-    sun.shadow.camera.far = modelSize * 4;
-    sun.shadow.camera.updateProjectionMatrix();
-
-    // Update ground
-    ground.position.set(center.x, box.min.y - 0.01, center.z);
-    ground.scale.set(modelSize * 0.1, modelSize * 0.1, 1);
-
-    // Fog
-    scene.fog = new THREE.FogExp2('#0a0c0e', 0.8 / modelSize);
-
-    // Update camera far plane
-    camera.far = modelSize * 10;
-    camera.near = modelSize * 0.001;
-    camera.updateProjectionMatrix();
-
-    // ─── Post-Processing ───
-    const composer = new EffectComposer(renderer);
-    
-    // Base render
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
-    
-    // SSAO — ambient occlusion for soft corner shadows (desktop only — too heavy for mobile)
-    const ssaoPass = new SSAOPass(scene, camera, window.innerWidth, window.innerHeight);
-    ssaoPass.kernelRadius = modelSize * 0.015;
-    ssaoPass.minDistance = modelSize * 0.0001;
-    ssaoPass.maxDistance = modelSize * 0.03;
-    ssaoPass.output = SSAOPass.OUTPUT.Default;
-    ssaoPass.enabled = !isTouchDevice;
-    composer.addPass(ssaoPass);
-    
-    // Bloom — subtle glow on bright surfaces (water reflections, metal)
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      0.15,  // strength — subtle
-      0.6,   // radius
-      0.85   // threshold — only bright areas
-    );
-    bloomPass.enabled = !isTouchDevice;
-    composer.addPass(bloomPass);
-    
-    // Output pass (handles color space conversion)
-    const outputPass = new OutputPass();
-    composer.addPass(outputPass);
-    
-    // Store composer reference for render loop
-    window._composer = composer;
-    window._ssaoPass = ssaoPass;
-
-    // ─── Solar Position System ───
-    const SITE_LAT = -8.593250;
-    const SITE_LNG = 115.125333;
-    const WITA_OFFSET = 8; // UTC+8
-    
-    let sunMode = 'live'; // 'live' or 'manual'
-    let manualMinutes = 870; // 14:30 default
-    
-    const timeDisplay = document.getElementById('time-display');
-    const timeDetails = document.getElementById('time-details');
-    const timeSlider = document.getElementById('time-slider');
-    const sunRiseEl = document.getElementById('sun-rise');
-    const sunSetEl = document.getElementById('sun-set');
-    
-    function calcSolarPosition(latDeg, lngDeg, dateUTC) {
-      const lat = latDeg * Math.PI / 180;
-      const n = Math.floor((dateUTC - new Date(dateUTC.getUTCFullYear(), 0, 0)) / 86400000);
-      const B = (2 * Math.PI / 365) * (n - 81);
-      const declination = (23.45 * Math.PI / 180) * Math.sin(B);
-      const EoT = 9.87 * Math.sin(2*B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
-      const utcHours = dateUTC.getUTCHours() + dateUTC.getUTCMinutes()/60 + dateUTC.getUTCSeconds()/3600;
-      const solarTime = utcHours + lngDeg/15 + EoT/60;
-      const hourAngle = (15 * (solarTime - 12)) * Math.PI / 180;
-      
-      const sinElev = Math.sin(lat) * Math.sin(declination) + 
-                      Math.cos(lat) * Math.cos(declination) * Math.cos(hourAngle);
-      const elevation = Math.asin(Math.max(-1, Math.min(1, sinElev)));
-      
-      const cosElev = Math.cos(elevation);
-      let azimuth = 0;
-      if (cosElev > 0.001) {
-        const cosAz = (Math.sin(declination) - Math.sin(lat) * Math.sin(elevation)) / (Math.cos(lat) * cosElev);
-        azimuth = Math.acos(Math.max(-1, Math.min(1, cosAz)));
-        if (hourAngle > 0) azimuth = 2 * Math.PI - azimuth;
-      }
-      
-      return {
-        elevation: elevation * 180 / Math.PI,
-        azimuth: azimuth * 180 / Math.PI,
-        elevationRad: elevation,
-        azimuthRad: azimuth,
-      };
-    }
-    
-    function findSunriseSunset(latDeg, lngDeg, date) {
-      let rise = '—', set = '—';
-      for (let m = 300; m < 720; m += 1) {
-        const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 
-                          Math.floor((m - WITA_OFFSET * 60) / 60), (m - WITA_OFFSET * 60) % 60));
-        const s = calcSolarPosition(latDeg, lngDeg, d);
-        if (s.elevation > 0) {
-          const h = Math.floor(m / 60);
-          const mi = m % 60;
-          rise = `${h.toString().padStart(2,'0')}:${mi.toString().padStart(2,'0')}`;
-          break;
-        }
-      }
-      for (let m = 1140; m > 720; m -= 1) {
-        const d = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 
-                          Math.floor((m - WITA_OFFSET * 60) / 60), (m - WITA_OFFSET * 60) % 60));
-        const s = calcSolarPosition(latDeg, lngDeg, d);
-        if (s.elevation > 0) {
-          const h = Math.floor(m / 60);
-          const mi = m % 60;
-          set = `${h.toString().padStart(2,'0')}:${mi.toString().padStart(2,'0')}`;
-          break;
-        }
-      }
-      return { rise, set };
-    }
-    
-    function updateSunPosition(witaMinutes) {
-      const now = new Date();
-      const hours = Math.floor(witaMinutes / 60);
-      const minutes = witaMinutes % 60;
-      
-      // Build a UTC date from the WITA time
-      const utcDate = new Date(Date.UTC(
-        now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(),
-        hours - WITA_OFFSET, minutes
-      ));
-      
-      const solar = calcSolarPosition(SITE_LAT, SITE_LNG, utcDate);
-      
-      // Update UI
-      timeDisplay.textContent = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}`;
-      
-      const dirs = ['N','NE','E','SE','S','SW','W','NW'];
-      const dirIdx = Math.round(((solar.azimuth + 22.5) % 360) / 45) % 8;
-      const dirName = dirs[dirIdx];
-      
-      const belowHorizon = solar.elevation < 0;
-      timeDetails.textContent = belowHorizon 
-        ? `WITA · Below horizon` 
-        : `WITA · Elev ${solar.elevation.toFixed(0)}° · ${dirName}`;
-      
-      // Update sunrise/sunset
-      const riseSet = findSunriseSunset(SITE_LAT, SITE_LNG, utcDate);
-      sunRiseEl.textContent = `↑ ${riseSet.rise}`;
-      sunSetEl.textContent = `↓ ${riseSet.set}`;
-      
-      // ── Update Three.js sun light ──
-      if (modelCenter && modelSize > 0) {
-        const sunDist = modelSize * 1.5;
-        
-        if (belowHorizon) {
-          // Night — minimal moonlight
-          sun.intensity = 0.05;
-          sun.color.set('#4466aa');
-          fill.intensity = 0.02;
-          goldenLight.intensity = 0;
-          skyBounce.intensity = 0.05;
-          ambient.intensity = 0.08;
-          ambient.color.set('#1a2040');
-          hemi.intensity = 0.05;
-          renderer.toneMappingExposure = 0.3;
-          
-          // Darken sky/fog
-          scene.fog.color.set('#0a0c14');
-        } else {
-          // Convert azimuth (0=N,90=E,180=S,270=W) and elevation to 3D position
-          const azRad = solar.azimuthRad;
-          const elRad = solar.elevationRad;
-          
-          const sunX = modelCenter.x + sunDist * Math.cos(elRad) * Math.sin(azRad);
-          const sunY = modelCenter.y + sunDist * Math.sin(elRad);
-          const sunZ = modelCenter.z + sunDist * Math.cos(elRad) * Math.cos(azRad);
-          
-          sun.position.set(sunX, sunY, sunZ);
-          sun.target.position.copy(modelCenter);
-          
-          // ── Color temperature based on elevation ──
-          const t = Math.max(0, Math.min(1, solar.elevation / 60)); // 0=horizon, 1=high noon
-          
-          // Sunrise/sunset: warm orange. Midday: bright white-yellow
-          const r = 1.0;
-          const g = 0.7 + t * 0.28;  // 0.7 → 0.98
-          const b = 0.3 + t * 0.55;  // 0.3 → 0.85
-          sun.color.setRGB(r, g, b);
-          
-          // Intensity based on elevation (stronger when higher)
-          sun.intensity = 0.3 + t * 2.5;
-          
-          // Fill light — opposite side, weaker
-          fill.position.set(
-            modelCenter.x - sunDist * 0.4 * Math.cos(elRad) * Math.sin(azRad),
-            modelCenter.y + sunDist * 0.3,
-            modelCenter.z - sunDist * 0.4 * Math.cos(elRad) * Math.cos(azRad)
-          );
-          fill.intensity = 0.1 + t * 0.5;
-          fill.color.setRGB(0.9 + t * 0.1, 0.85 + t * 0.1, 0.7 + t * 0.2);
-          
-          // Golden hour accent (strong at low elevation)
-          const goldenT = Math.max(0, 1 - t * 3); // strong at low, fades by ~20°
-          goldenLight.intensity = goldenT * 0.8;
-          goldenLight.position.set(sunX * 0.8, modelCenter.y + modelSize * 0.05, sunZ * 0.8);
-          
-          // Sky bounce
-          skyBounce.intensity = 0.1 + t * 0.3;
-          
-          // Ambient
-          ambient.intensity = 0.15 + t * 0.2;
-          ambient.color.setRGB(0.9, 0.85 + t * 0.1, 0.75 + t * 0.15);
-          
-          // Hemisphere
-          hemi.intensity = 0.15 + t * 0.35;
-          
-          // Exposure — brighter at midday
-          renderer.toneMappingExposure = 0.7 + t * 0.5;
-          
-          // Fog color — warm at golden hour, neutral at midday
-          const fogR = 0.6 + t * 0.15;
-          const fogG = 0.65 + t * 0.15;
-          const fogB = 0.7 + t * 0.12;
-          scene.fog.color.setRGB(fogR, fogG, fogB);
-        }
-        
-        // Update shadow camera
-        sun.shadow.camera.updateProjectionMatrix();
-      }
-    }
-    
-    // ── Sun mode toggle ──
-    document.querySelectorAll('.sun-mode-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.sun-mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        sunMode = btn.dataset.sun;
-        
-        if (sunMode === 'manual') {
-          timeSlider.disabled = false;
-          timeSlider.style.opacity = '1';
-          updateSunPosition(parseInt(timeSlider.value));
-        } else {
-          timeSlider.disabled = true;
-          timeSlider.style.opacity = '0.4';
-          liveUpdate();
-        }
-      });
-    });
-    
-    // ── Time slider ──
-    timeSlider.addEventListener('input', () => {
-      if (sunMode === 'manual') {
-        manualMinutes = parseInt(timeSlider.value);
-        updateSunPosition(manualMinutes);
-      }
-    });
-    
-    // ── Live update interval ──
-    function liveUpdate() {
-      if (sunMode === 'live') {
-        const now = new Date();
-        const witaMinutes = (now.getUTCHours() + WITA_OFFSET) * 60 + now.getUTCMinutes();
-        timeSlider.value = Math.max(300, Math.min(1140, witaMinutes));
-        updateSunPosition(witaMinutes);
-      }
-    }
-    
-    // Initial update
-    liveUpdate();
-    setInterval(liveUpdate, 30000); // update every 30s in live mode
-    
-    // Start slider disabled in live mode
-    timeSlider.disabled = true;
-    timeSlider.style.opacity = '0.4';
-
-    // Update camera far plane
-    camera.far = modelSize * 10;
-    camera.near = modelSize * 0.001;
-    camera.updateProjectionMatrix();
-
-    // Done loading
-    loadingEl.classList.add('hidden');
-    setTimeout(() => {
-      welcomeEl.classList.remove('hidden');
-    }, 300);
-  },
-  (progress) => {
-    if (progress.total > 0) {
-      const pct = Math.round((progress.loaded / progress.total) * 100);
-      progressFill.style.width = pct + '%';
-      loadingPercent.textContent = pct + '%';
-    }
-  },
-  (error) => {
-    console.error('Error loading model:', error);
-    loadingPercent.textContent = 'Error loading model';
-  }
-);
-
-// ─── Enter ───
-enterBtn.addEventListener('click', () => {
-  welcomeEl.classList.add('hidden');
+<script>
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 60);
 });
 
-// ─── Mode Switching ───
-// Human eye height relative to model scale
-document.querySelectorAll('.mode-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const newMode = btn.dataset.mode;
+const navToggle = document.getElementById('nav-toggle');
+const navLinks = document.getElementById('nav-links');
+navToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => navLinks.classList.remove('open')));
 
-    // Exit pointer lock when switching to orbit
-    if (newMode === 'orbit' && isPointerLocked) {
-      document.exitPointerLock();
-    }
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-    mode = newMode;
-    orbitControls.enabled = (mode === 'orbit');
-
-    if (mode === 'orbit') {
-      crosshair.classList.remove('visible');
-    }
-
-    updateMobileControls();
-
-    // Toggle control hints per mode (desktop only)
-    if (!isTouchDevice) {
-      document.querySelectorAll('.orbit-hint').forEach(el => el.style.display = mode === 'orbit' ? 'flex' : 'none');
-      document.querySelectorAll('.fly-hint').forEach(el => el.style.display = mode === 'fly' ? 'flex' : 'none');
-    }
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    const t = document.querySelector(this.getAttribute('href'));
+    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 });
-
-// ─── Pointer Lock for walk/fly (desktop only) ───
-renderer.domElement.addEventListener('click', () => {
-  if (mode !== 'orbit' && !isPointerLocked && !isTouchDevice) {
-    renderer.domElement.requestPointerLock();
-  }
-});
-
-document.addEventListener('pointerlockchange', () => {
-  isPointerLocked = document.pointerLockElement === renderer.domElement;
-  crosshair.classList.toggle('visible', isPointerLocked);
-});
-
-// ─── Mouse look ───
-document.addEventListener('mousemove', (e) => {
-  if (!isPointerLocked) return;
-
-  euler.setFromQuaternion(camera.quaternion);
-  euler.y -= e.movementX * LOOK_SPEED;
-  euler.x -= e.movementY * LOOK_SPEED;
-  euler.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, euler.x));
-  camera.quaternion.setFromEuler(euler);
-});
-
-// ─── Keyboard ───
-document.addEventListener('keydown', (e) => { if (!e.metaKey && !e.ctrlKey) keys[e.key.toLowerCase()] = true; });
-document.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
-
-// ─── Mobile Detection & Touch Controls ───
-
-const joystickZone = document.getElementById('joystick-zone');
-const joystickThumb = document.getElementById('joystick-thumb');
-const flyVerticalBtns = document.getElementById('fly-vertical-btns');
-const welcomeHint = document.getElementById('welcome-hint');
-
-// Update welcome hint for mobile
-if (isTouchDevice) {
-  welcomeHint.textContent = 'Drag to look · Joystick to move · Pinch to zoom';
-}
-
-// Joystick state (continued)
-let joystickCenter = { x: 0, y: 0 };
-const JOYSTICK_MAX_RADIUS = 45;
-
-// Touch-look state
-let lookTouchId = null;
-let lastLookPos = { x: 0, y: 0 };
-const TOUCH_LOOK_SPEED = 0.003;
-
-// Show/hide joystick based on mode
-function updateMobileControls() {
-  if (!isTouchDevice) return;
-  const showJoystick = mode !== 'orbit';
-  joystickZone.style.display = showJoystick ? 'block' : 'none';
-  flyVerticalBtns.style.display = mode === 'fly' ? 'flex' : 'none';
-}
-
-// ── Joystick Touch Handling ──
-joystickZone.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  const touch = e.changedTouches[0];
-  joystickTouchId = touch.identifier;
-  joystickActive = true;
-
-  const rect = joystickZone.getBoundingClientRect();
-  joystickCenter.x = rect.left + rect.width / 2;
-  joystickCenter.y = rect.top + rect.height / 2;
-
-  updateJoystickPosition(touch.clientX, touch.clientY);
-}, { passive: false });
-
-joystickZone.addEventListener('touchmove', (e) => {
-  e.preventDefault();
-  for (const touch of e.changedTouches) {
-    if (touch.identifier === joystickTouchId) {
-      updateJoystickPosition(touch.clientX, touch.clientY);
-    }
-  }
-}, { passive: false });
-
-joystickZone.addEventListener('touchend', (e) => {
-  for (const touch of e.changedTouches) {
-    if (touch.identifier === joystickTouchId) {
-      joystickActive = false;
-      joystickTouchId = null;
-      joystickInput = { x: 0, y: 0 };
-      joystickThumb.style.transform = 'translate(-50%, -50%)';
-    }
-  }
-});
-
-joystickZone.addEventListener('touchcancel', () => {
-  joystickActive = false;
-  joystickTouchId = null;
-  joystickInput = { x: 0, y: 0 };
-  joystickThumb.style.transform = 'translate(-50%, -50%)';
-});
-
-function updateJoystickPosition(touchX, touchY) {
-  let dx = touchX - joystickCenter.x;
-  let dy = touchY - joystickCenter.y;
-  const dist = Math.sqrt(dx * dx + dy * dy);
-
-  if (dist > JOYSTICK_MAX_RADIUS) {
-    dx = (dx / dist) * JOYSTICK_MAX_RADIUS;
-    dy = (dy / dist) * JOYSTICK_MAX_RADIUS;
-  }
-
-  joystickThumb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-  joystickInput.x = dx / JOYSTICK_MAX_RADIUS;
-  joystickInput.y = dy / JOYSTICK_MAX_RADIUS;
-}
-
-// ── Fly Up/Down Buttons ──
-const flyUpBtn = document.getElementById('fly-up-btn');
-const flyDownBtn = document.getElementById('fly-down-btn');
-
-flyUpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); flyUpPressed = true; }, { passive: false });
-flyUpBtn.addEventListener('touchend', () => { flyUpPressed = false; });
-flyUpBtn.addEventListener('touchcancel', () => { flyUpPressed = false; });
-
-flyDownBtn.addEventListener('touchstart', (e) => { e.preventDefault(); flyDownPressed = true; }, { passive: false });
-flyDownBtn.addEventListener('touchend', () => { flyDownPressed = false; });
-flyDownBtn.addEventListener('touchcancel', () => { flyDownPressed = false; });
-
-// ── Touch Look (drag anywhere on canvas to look around) ──
-renderer.domElement.addEventListener('touchstart', (e) => {
-  if (mode === 'orbit') return; // OrbitControls handles orbit touch
-
-  // Find a touch that isn't on the joystick or fly buttons
-  for (const touch of e.changedTouches) {
-    if (touch.identifier === joystickTouchId) continue;
-
-    // Check if touch is on the joystick zone or fly buttons
-    const el = document.elementFromPoint(touch.clientX, touch.clientY);
-    if (el && (el.closest('#joystick-zone') || el.closest('#fly-vertical-btns'))) continue;
-
-    lookTouchId = touch.identifier;
-    lastLookPos = { x: touch.clientX, y: touch.clientY };
-    break;
-  }
-}, { passive: true });
-
-renderer.domElement.addEventListener('touchmove', (e) => {
-  if (mode === 'orbit') return;
-
-  for (const touch of e.changedTouches) {
-    if (touch.identifier === lookTouchId) {
-      const dx = touch.clientX - lastLookPos.x;
-      const dy = touch.clientY - lastLookPos.y;
-
-      euler.setFromQuaternion(camera.quaternion);
-      euler.y -= dx * TOUCH_LOOK_SPEED;
-      euler.x -= dy * TOUCH_LOOK_SPEED;
-      euler.x = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, euler.x));
-      camera.quaternion.setFromEuler(euler);
-
-      lastLookPos = { x: touch.clientX, y: touch.clientY };
-    }
-  }
-}, { passive: true });
-
-renderer.domElement.addEventListener('touchend', (e) => {
-  for (const touch of e.changedTouches) {
-    if (touch.identifier === lookTouchId) {
-      lookTouchId = null;
-    }
-  }
-});
-
-// ── Prevent default on canvas to stop iOS pull-to-refresh etc ──
-renderer.domElement.addEventListener('touchmove', (e) => {
-  if (mode !== 'orbit') {
-    e.preventDefault();
-  }
-}, { passive: false });
-
-// ─── Ground Height Detection (only walkable surfaces, facing up) ───
-// Minimum floor level — paths sit around Y=5-8 in this model
-const MIN_WALK_Y = 4.0;
-
-function getGroundHeight(x, z, currentY) {
-  if (!modelRef || walkableMeshes.length === 0) return null;
-
-  // Cast ray DOWNWARD from slightly above current position
-  // This way we find the floor beneath us, not the roof above
-  const origin = new THREE.Vector3(x, currentY + 2, z);
-  groundRaycaster.set(origin, new THREE.Vector3(0, -1, 0));
-  groundRaycaster.far = 20; // only look 20 units down
-
-  const hits = groundRaycaster.intersectObjects(walkableMeshes, false);
-
-  if (hits.length > 0) {
-    for (const hit of hits) {
-      // Only accept surfaces above the minimum walk level
-      if (hit.point.y < MIN_WALK_Y) continue;
-
-      if (hit.face && hit.face.normal) {
-        const worldNormal = hit.face.normal.clone();
-        worldNormal.transformDirection(hit.object.matrixWorld);
-        // Accept surfaces facing upward (floor-like)
-        if (worldNormal.y > 0.5) {
-          return hit.point.y;
-        }
-      }
-    }
-  }
-  return null;
-}
-
-// ─── Collision Check (all obstacles) ───
-function checkCollision(position, direction) {
-  if (!modelRef) return false;
-
-  // Cast ray at chest height in movement direction
-  const origin = position.clone();
-  const dir = direction.clone().normalize();
-
-  collisionRaycaster.set(origin, dir);
-  collisionRaycaster.far = COLLISION_DISTANCE;
-
-  const hits = collisionRaycaster.intersectObjects(obstacleMeshes, false);
-  return hits.length > 0;
-}
-
-// ─── Movement ───
-function updateMovement() {
-  if (mode !== 'fly') return;
-
-  const speed = FLY_SPEED * modelSize * 0.01;
-  const forward = new THREE.Vector3();
-  const right = new THREE.Vector3();
-
-  camera.getWorldDirection(forward);
-  right.crossVectors(forward, camera.up).normalize();
-
-  const moveDir = new THREE.Vector3();
-
-  // Keyboard input
-  if (keys['w'] || keys['arrowup']) moveDir.add(forward);
-  if (keys['s'] || keys['arrowdown']) moveDir.sub(forward);
-  if (keys['d'] || keys['arrowright']) moveDir.add(right);
-  if (keys['a'] || keys['arrowleft']) moveDir.sub(right);
-
-  // Mobile joystick input (joystickInput.y is inverted: up = negative)
-  if (joystickActive) {
-    moveDir.add(forward.clone().multiplyScalar(-joystickInput.y));
-    moveDir.add(right.clone().multiplyScalar(joystickInput.x));
-  }
-
-  if (mode === 'fly') {
-    if (keys[' '] || flyUpPressed) moveDir.y += 1;
-    if (keys['shift'] || flyDownPressed) moveDir.y -= 1;
-  }
-
-  if (moveDir.length() > 0) {
-    moveDir.normalize().multiplyScalar(speed);
-    camera.position.add(moveDir);
-  }
-}
-
-// ─── Resize ───
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  if (window._composer) {
-    window._composer.setSize(window.innerWidth, window.innerHeight);
-  }
-  if (window._ssaoPass) {
-    window._ssaoPass.setSize(window.innerWidth, window.innerHeight);
-  }
-});
-
-// ─── Animate ───
-
-function animate() {
-  requestAnimationFrame(animate);
-  updateMovement();
-
-  if (mode === 'orbit') {
-    orbitControls.update();
-  }
-
-  // Use post-processing composer if available, otherwise basic render
-  if (window._composer) {
-    window._composer.render();
-  } else {
-    renderer.render(scene, camera);
-  }
-}
-
-animate();
-
-// ═══════════════════════════════════════════
-// ─── AI PHOTOREALISTIC RENDER ───
-// ═══════════════════════════════════════════
-
-const FAL_KEY = 'd4fbcdbe-1fb1-4e0c-8ee7-1845f55b0318:e705fdbb3e2e3abee3727229fd2591c8';
-const renderBtn = document.getElementById('ai-render-btn');
-const renderOverlay = document.getElementById('render-overlay');
-const renderResult = document.getElementById('render-result');
-const renderClose = document.getElementById('render-close');
-const renderDownload = document.getElementById('render-download');
-
-let lastRenderUrl = null;
-
-renderBtn.addEventListener('click', async () => {
-  if (renderBtn.disabled) return;
-  
-  // Disable button, show spinner
-  renderBtn.disabled = true;
-  renderBtn.innerHTML = '<span class="spinner"></span>Rendering...';
-  
-  try {
-    // 1. Capture screenshot from the canvas
-    // Force a render to make sure buffer is fresh
-    if (window._composer) {
-      window._composer.render();
-    } else {
-      renderer.render(scene, camera);
-    }
-    
-    const screenshotDataUrl = renderer.domElement.toDataURL('image/jpeg', 0.92);
-    console.log('Screenshot captured:', screenshotDataUrl.length, 'bytes');
-    
-    // 2. Build the prompt — KEY: tell it to preserve exact composition
-    const isFirstPerson = (mode === 'walk');
-    const isFlyMode = (mode === 'fly');
-    
-    const prompt = `Keep this EXACT image layout, camera angle, and all building positions completely unchanged. Do not add or remove any buildings or structures. ` +
-      `Only make these subtle enhancements: ` +
-      `1. Upgrade all surface materials to photorealistic textures — real wood grain, natural stone, concrete, woven thatch ` +
-      `2. Add realistic lighting with warm sunlight and soft shadows ` +
-      `3. Make any water features crystal clear and reflective ` +
-      `4. Add some green tropical plants and palm trees only in empty ground areas ` +
-      `Keep everything else exactly as it is. Photorealistic architectural photograph, clean and minimal.`;
-    
-    // 3. Call fal.ai Nano Banana Pro Edit (structure-preserving)
-    console.log('Calling Nano Banana Pro...');
-    
-    const response = await fetch('https://fal.run/fal-ai/nano-banana-pro/edit', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${FAL_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt: prompt,
-        image_urls: [screenshotDataUrl],
-      }),
-    });
-    
-    if (!response.ok) {
-      const errData = await response.text();
-      throw new Error('API error ' + response.status + ': ' + errData);
-    }
-    
-    const data = await response.json();
-    
-    if (data.images && data.images[0]) {
-      lastRenderUrl = data.images[0].url;
-    } else {
-      throw new Error('No image in response');
-    }
-    
-    if (!lastRenderUrl) throw new Error('No image returned');
-    
-    // 4. Show result
-    renderResult.src = lastRenderUrl;
-    renderOverlay.classList.add('visible');
-    console.log('Render complete:', lastRenderUrl);
-    
-  } catch (err) {
-    console.error('AI Render error:', err);
-    alert('Render failed: ' + err.message);
-  } finally {
-    renderBtn.disabled = false;
-    renderBtn.innerHTML = '✦ AI Render';
-  }
-});
-
-// Close overlay
-renderClose.addEventListener('click', () => {
-  renderOverlay.classList.remove('visible');
-});
-
-// Download render
-renderDownload.addEventListener('click', async () => {
-  if (!lastRenderUrl) return;
-  try {
-    const res = await fetch(lastRenderUrl);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `sanctum-render-${Date.now()}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-  } catch (e) {
-    // Fallback: open in new tab
-    window.open(lastRenderUrl, '_blank');
-  }
-});
-
-// ESC to close overlay
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && renderOverlay.classList.contains('visible')) {
-    renderOverlay.classList.remove('visible');
-  }
-});
 </script>
+
 </body>
 </html>
