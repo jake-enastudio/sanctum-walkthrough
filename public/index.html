@@ -742,18 +742,26 @@
   </div>
 
   <!-- Controls -->
-  <div class="controls-hint" id="controls-hint" style="display:none;">
-    <div class="control-row">
-      <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
-      <span class="control-label">Move</span>
-    </div>
-    <div class="control-row">
+  <div class="controls-hint" id="controls-hint">
+    <div class="control-row orbit-hint">
       <span class="key">Mouse</span>
       <span class="control-label">Look</span>
     </div>
-    <div class="control-row">
+    <div class="control-row orbit-hint">
       <span class="key">Scroll</span>
       <span class="control-label">Zoom</span>
+    </div>
+    <div class="control-row fly-hint" style="display:none;">
+      <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+      <span class="control-label">Move</span>
+    </div>
+    <div class="control-row fly-hint" style="display:none;">
+      <span class="key">Space</span> <span class="key">Shift</span>
+      <span class="control-label">Up / Down</span>
+    </div>
+    <div class="control-row fly-hint" style="display:none;">
+      <span class="key">Mouse</span>
+      <span class="control-label">Look</span>
     </div>
   </div>
 
@@ -1568,9 +1576,11 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 
     updateMobileControls();
 
-    // Show WASD hints only in fly mode (desktop only)
-    const controlsHint = document.getElementById('controls-hint');
-    controlsHint.style.display = (mode === 'fly' && !isTouchDevice) ? 'block' : 'none';
+    // Toggle control hints per mode (desktop only)
+    if (!isTouchDevice) {
+      document.querySelectorAll('.orbit-hint').forEach(el => el.style.display = mode === 'orbit' ? 'flex' : 'none');
+      document.querySelectorAll('.fly-hint').forEach(el => el.style.display = mode === 'fly' ? 'flex' : 'none');
+    }
   });
 });
 
