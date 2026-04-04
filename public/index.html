@@ -949,6 +949,98 @@
     color: rgba(255,255,255,0.7);
   }
 
+  /* ── Competitive Landscape ── */
+  .comp-section {
+    background: var(--dark);
+  }
+
+  .comp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-top: 60px;
+    align-items: start;
+  }
+
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .comp-table th {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding: 10px 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comp-table th:first-child {
+    text-align: left;
+    color: var(--text-tertiary);
+  }
+
+  .comp-table th.highlight {
+    color: var(--gold);
+    border-bottom-color: var(--border-gold);
+  }
+
+  .comp-table td {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .comp-table td:first-child {
+    text-align: left;
+    font-weight: 400;
+    color: var(--text-primary);
+    font-size: 13px;
+  }
+
+  .comp-table td.highlight {
+    background: rgba(201,169,110,0.04);
+  }
+
+  .comp-check {
+    color: var(--gold);
+    font-size: 14px;
+  }
+
+  .comp-dash {
+    color: var(--text-tertiary);
+    font-size: 14px;
+  }
+
+  .comp-moat {
+    margin-top: 32px;
+    padding: 24px;
+    background: var(--dark-card);
+    border: 1px solid var(--border-gold);
+    border-radius: 4px;
+  }
+
+  .comp-moat-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .comp-moat-desc {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+
   /* ── Hero visual strip ── */
   .hero-visual {
     height: 50vh;
@@ -1008,6 +1100,9 @@
     .pillars-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
     .walkthrough-cta { padding: 100px 20px; }
     .gallery { padding: 80px 20px; }
+    .comp-grid { grid-template-columns: 1fr; gap: 40px; }
+    .comp-table th, .comp-table td { padding: 8px 6px; font-size: 10px; }
+    .comp-table td:first-child { font-size: 11px; }
     .gallery-grid {
       grid-template-columns: 1fr 1fr;
       grid-template-rows: 220px 220px 220px;
@@ -1037,6 +1132,7 @@
     <li><a href="#vision">Vision</a></li>
     <li><a href="#pillars">Concept</a></li>
     <li><a href="#location">Location</a></li>
+    <li><a href="#landscape">Landscape</a></li>
     <li><a href="#walkthrough">3D Walkthrough</a></li>
     <li><a href="#investment">Investment</a></li>
     <li><a href="#contact" class="nav-cta">Get in Touch</a></li>
@@ -1268,6 +1364,110 @@
             <div class="location-detail-desc">The riverfront topography, waterfalls, and surrounding jungle create a structural advantage that cannot be replicated on flat commercial land.</div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Competitive Landscape -->
+<section class="comp-section" id="landscape">
+  <div class="section-inner">
+    <div class="comp-grid">
+      <div class="reveal">
+        <div class="section-label">Competitive Landscape</div>
+        <h2 class="section-title">A Category of One</h2>
+        <p class="section-desc">
+          Bali's gym market has matured rapidly — Obsidian, Omni, Body Factory, and others
+          offer excellent training facilities. But every competitor operates on flat commercial land
+          with a gym-first model and recovery as an afterthought.
+        </p>
+        <p class="section-desc" style="margin-top: 20px;">
+          Sanctum is not a gym with a cold plunge bolted on. It's a destination where training,
+          thermal recovery, dining, and hospitality are designed as one integrated experience — 
+          set in a natural environment that no competitor can replicate.
+        </p>
+
+        <div class="comp-moat">
+          <div class="comp-moat-title">The Structural Moat</div>
+          <div class="comp-moat-desc">
+            Competitors can buy better equipment or hire better trainers. They cannot build a river valley,
+            waterfalls, or a terraced tropical forest. Sanctum's location is its permanent competitive advantage.
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal" style="transition-delay: 0.15s;">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="highlight">Sanctum</th>
+              <th>Obsidian</th>
+              <th>Omni</th>
+              <th>Body Factory</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Premium Gym</td>
+              <td class="highlight"><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-check">&#10003;</span></td>
+            </tr>
+            <tr>
+              <td>Thermal Recovery Circuit</td>
+              <td class="highlight"><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-check">&#10003;</span></td>
+            </tr>
+            <tr>
+              <td>Multiple Sauna Types</td>
+              <td class="highlight"><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+            </tr>
+            <tr>
+              <td>Natural Water Features</td>
+              <td class="highlight"><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+            </tr>
+            <tr>
+              <td>On-site Restaurant</td>
+              <td class="highlight"><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td>Cafe</td>
+            </tr>
+            <tr>
+              <td>Accommodation / Villas</td>
+              <td class="highlight"><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+            </tr>
+            <tr>
+              <td>Riverfront / Nature Setting</td>
+              <td class="highlight"><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+            </tr>
+            <tr>
+              <td>Destination Experience</td>
+              <td class="highlight"><span class="comp-check">&#10003;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+              <td><span class="comp-dash">&#8212;</span></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
