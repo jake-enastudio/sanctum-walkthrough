@@ -1015,7 +1015,7 @@ loader.setDRACOLoader(dracoLoader);
 loader.setMeshoptDecoder(MeshoptDecoder);
 
 // Model URL — served from Supabase Storage (public bucket)
-const MODEL_URL = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models/sanctum-optimized.glb';
+const MODEL_URL = 'https://hnzejfxoycbmthoezwma.supabase.co/storage/v1/object/public/3d-models/sanctum-apr5-optimized.glb';
 
 loader.load(
   MODEL_URL,
@@ -1152,10 +1152,57 @@ loader.load(
             m.envMapIntensity = 0.8;
           }
           // Plaster
-          else if (name.includes('Plaster')) {
+          else if (name.includes('Plaster') || name.includes('PlushVelvet')) {
             m.roughness = 0.85;
             m.metalness = 0.0;
             m.envMapIntensity = 0.1;
+          }
+          // Gym equipment — dark metals, screens, rubber
+          else if (name.includes('Insignia') || name.includes('WeightStack') || name.includes('Weights') 
+            || name.includes('Pulldown') || name.includes('Biceps') || name.includes('OP-')
+            || name.includes('DISPLAY_SCREEN') || name.includes('Black_Frame')
+            || name.includes('LF_Logo') || name.includes('LF_Red')) {
+            m.roughness = 0.4;
+            m.metalness = 0.6;
+            m.envMapIntensity = 0.3;
+          }
+          // Bark / Log / split wood
+          else if (name.includes('Bark') || name.includes('bark') || name.includes('Log') 
+            || name.includes('log') || name.includes('split wood')) {
+            m.roughness = 0.85;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.08;
+            if (m.map && m.color) {
+              m.color.setRGB(0.8, 0.8, 0.8);
+            }
+          }
+          // Forest floor / ground
+          else if (name.includes('Forest_Floor')) {
+            m.roughness = 0.95;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.05;
+          }
+          // Fire effect
+          else if (name.includes('fire_png')) {
+            m.transparent = true;
+            m.opacity = 0.9;
+            m.roughness = 0.5;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.0;
+          }
+          // Wicker / furniture
+          else if (name.includes('wicker') || name.includes('carpet') || name.includes('Fseats')
+            || name.includes('Fbasic')) {
+            m.roughness = 0.8;
+            m.metalness = 0.0;
+            m.envMapIntensity = 0.1;
+          }
+          // Aluminum / platinum / stainless steel  
+          else if (name.includes('aluminum') || name.includes('Platinum') || name.includes('Stainless')
+            || name.includes('Fsteel') || name.includes('Fsilver') || name.includes('Fhighlight')) {
+            m.roughness = 0.25;
+            m.metalness = 0.85;
+            m.envMapIntensity = 0.6;
           }
           // Rock / cliff face — apply PBR maps
           else if (name === 'Model001_Material14' || name.includes('Materialasdfasdf')) {
