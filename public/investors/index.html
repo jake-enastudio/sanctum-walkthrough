@@ -442,23 +442,162 @@
     line-height: 1.8;
   }
 
-  /* ── Mobile ── */
-  @media (max-width: 768px) {
-    nav { padding: 16px 20px; }
-    section { padding: 60px 20px; }
-    .kpi-row { grid-template-columns: 1fr 1fr; }
-    .scenario-grid { grid-template-columns: 1fr; }
-    .risk-item { grid-template-columns: 1fr; gap: 8px; }
-    .legal-grid { grid-template-columns: 1fr; }
-    .gate-input-row { flex-direction: column; }
-    .data-table { font-size: 13px; }
-    .data-table td, .data-table th { padding: 10px 8px; }
-    .use-of-funds-layout { grid-template-columns: 1fr; }
-    .chart-container { height: 280px; }
-    .calc-inputs { grid-template-columns: 1fr; }
-    .calc-outputs { grid-template-columns: 1fr 1fr; }
-    .returns-layout { grid-template-columns: 1fr; }
+  /* ── Tablet ── */
+  @media (max-width: 1024px) {
+    section { padding: 70px 32px; }
+    .use-of-funds-layout { gap: 32px; }
+    .calc-inputs { gap: 16px; }
   }
+
+  /* ── Mobile (768px) ── */
+  @media (max-width: 768px) {
+    /* Nav */
+    nav { padding: 14px 18px; }
+    .nav-logo { font-size: 16px; letter-spacing: 0.18em; }
+    .nav-back { font-size: 10px; }
+    .nav-back span { display: none; } /* hide "Back to Overview" text, keep arrow */
+
+    /* Section spacing */
+    .investor-content { padding-top: 60px; }
+    section { padding: 48px 20px; }
+    .section-inner { max-width: 100%; }
+    .section-label { font-size: 9px; margin-bottom: 12px; }
+    .section-title { font-size: clamp(24px, 6vw, 30px); margin-bottom: 14px; line-height: 1.25; }
+    .section-desc { font-size: 14px; line-height: 1.75; }
+
+    /* Confidential banner */
+    .confidential-banner { padding: 80px 20px 32px; }
+    .confidential-title { font-size: clamp(26px, 7vw, 36px); }
+    .confidential-subtitle { font-size: 11px; letter-spacing: 0.15em; }
+    .confidential-badge { font-size: 8px; padding: 5px 14px; margin-bottom: 18px; }
+
+    /* Gate */
+    .gate-content { padding: 0 20px; }
+    .gate-input-row { flex-direction: column; gap: 10px; }
+    .gate-input-row input,
+    .gate-input-row button { width: 100%; }
+
+    /* Data tables — convert to card layout */
+    .data-table { font-size: 13px; }
+    .data-table th { font-size: 9px; padding: 10px 8px; }
+    .data-table td { padding: 12px 8px; font-size: 13px; }
+
+    /* KPI cards — single column on mobile, full width */
+    .kpi-row {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .kpi-card { padding: 20px; }
+    .kpi-value { font-size: 26px; }
+    .kpi-label { font-size: 9px; }
+
+    /* Scenarios */
+    .scenario-grid { grid-template-columns: 1fr; gap: 14px; }
+    .scenario-card { padding: 20px; }
+
+    /* Risks — stack on mobile */
+    .risk-item {
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 18px 0;
+    }
+    .risk-name { font-size: 15px; }
+    .risk-mitigant { font-size: 13px; }
+
+    /* Legal */
+    .legal-grid { grid-template-columns: 1fr; gap: 14px; }
+    .legal-card { padding: 20px; }
+
+    /* Use of funds — stack chart above table */
+    .use-of-funds-layout { grid-template-columns: 1fr; gap: 24px; }
+    .donut-container { max-width: 260px; }
+
+    /* Charts */
+    .chart-container { height: 260px; margin-top: 24px; }
+
+    /* ROI Calculator — stack inputs vertically, larger touch targets */
+    .calc-inputs {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin: 28px 0;
+    }
+    .calc-input-label { font-size: 10px; margin-bottom: 12px; }
+    .calc-slider {
+      height: 6px; /* thicker slider track for touch */
+    }
+    .calc-slider::-webkit-slider-thumb {
+      width: 26px; /* much larger touch target */
+      height: 26px;
+    }
+    .calc-slider::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+    }
+    .calc-value { font-size: 22px; margin-top: 12px; }
+
+    /* Calc outputs — 2 columns on mobile */
+    .calc-outputs {
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 28px;
+    }
+    .calc-output { padding: 18px 12px; }
+    .calc-output-value { font-size: 22px; }
+    .calc-output-label { font-size: 9px; }
+
+    /* Returns layout */
+    .returns-layout { grid-template-columns: 1fr; gap: 20px; }
+    .returns-card { padding: 16px 20px; }
+    .returns-card-label { font-size: 12px; }
+
+    /* Footer */
+    .investor-footer { padding: 40px 20px; }
+    .investor-footer p { font-size: 10px; }
+  }
+
+  /* ── Small mobile (480px) ── */
+  @media (max-width: 480px) {
+    section { padding: 40px 16px; }
+    nav { padding: 12px 16px; }
+    .investor-content { padding-top: 56px; }
+
+    .confidential-banner { padding: 70px 16px 28px; }
+    .confidential-title { font-size: clamp(22px, 7vw, 30px); }
+
+    .section-title { font-size: clamp(22px, 6vw, 28px); }
+    .section-desc { font-size: 13.5px; }
+
+    /* Tables become near edge-to-edge */
+    .data-table th { padding: 8px 6px; }
+    .data-table td { padding: 10px 6px; font-size: 12.5px; }
+    .data-table .subdued { font-size: 11px; }
+
+    .kpi-value { font-size: 24px; }
+    .calc-output-value { font-size: 20px; }
+
+    /* Calc outputs single column on very narrow screens */
+    .calc-outputs { grid-template-columns: 1fr; }
+  }
+
+  /* Touch device improvements regardless of width */
+  @media (hover: none) and (pointer: coarse) {
+    .calc-slider::-webkit-slider-thumb {
+      width: 26px;
+      height: 26px;
+    }
+    .calc-slider::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+    }
+    .calc-slider { height: 6px; }
+  }
+
+  /* Prevent horizontal overflow globally */
+  html, body { overflow-x: hidden; max-width: 100vw; }
+  .investor-content { overflow-x: hidden; }
+  section { overflow-x: hidden; }
+  table { max-width: 100%; }
 
   /* ── Charts ── */
   .chart-container {
