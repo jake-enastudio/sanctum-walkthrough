@@ -621,7 +621,7 @@
 
   .use-of-funds-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 48px;
     align-items: start;
     margin-top: 24px;
@@ -722,10 +722,16 @@
   /* ── Returns Layout ── */
   .returns-layout {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
     gap: 32px;
     align-items: start;
     margin-top: 24px;
+  }
+
+  /* Desktop-only: restore 2-column layouts */
+  @media (min-width: 1025px) {
+    .use-of-funds-layout { grid-template-columns: 1fr 1fr; }
+    .returns-layout { grid-template-columns: 2fr 1fr; }
   }
 
   .returns-summary {
