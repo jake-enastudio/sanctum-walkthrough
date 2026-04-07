@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Sanctum — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c9a96e;
+  --gold-dim: rgba(201,169,110,0.15);
+  --dark: #0a0a0a;
+  --dark-card: #131313;
+  --border: rgba(255,255,255,0.06);
+  --border-gold: rgba(201,169,110,0.3);
+  --text-primary: #f5f5f5;
+  --text-secondary: rgba(255,255,255,0.55);
+  --text-tertiary: rgba(255,255,255,0.35);
+  --green: #5db88d;
+  --red: #e85d5d;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  background: var(--dark);
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+::selection { background: rgba(201,169,110,0.3); color: white; }
+
+/* ── Nav ── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.nav-logo span {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  margin-left: 12px;
+  font-weight: 400;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+.nav-link:hover { color: var(--gold); }
+
+/* ── Gate ── */
+.gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+.gate-content { max-width: 380px; width: 100%; }
+
+.gate-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 22px;
+  color: var(--gold);
+}
+
+.gate-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--gold);
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+}
+
+.gate-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.gate input {
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--dark-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 12px;
+}
+
+.gate input:focus { border-color: var(--border-gold); }
+
+.gate button {
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--gold);
+  color: var(--dark);
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.gate button:hover { background: #d4b67a; }
+.gate button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.gate-error {
+  display: none;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(232,93,93,0.1);
+  border: 1px solid rgba(232,93,93,0.3);
+  border-radius: 4px;
+  color: var(--red);
+  font-size: 12px;
+}
+
+/* ── Admin content ── */
+.admin-content {
+  display: none;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 32px 24px 80px;
+}
+
+.admin-content.visible { display: block; }
+
+.admin-header {
+  margin-bottom: 32px;
+}
+
+.admin-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 500;
+  color: var(--gold);
+  margin-bottom: 8px;
+  letter-spacing: 0.03em;
+}
+
+.admin-header p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.section {
+  margin-bottom: 36px;
+  background: var(--dark-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.section-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+.section-toggle {
+  color: var(--text-tertiary);
+  font-size: 18px;
+  transition: transform 0.2s;
+}
+
+.section.collapsed .section-toggle { transform: rotate(-90deg); }
+.section.collapsed .section-body { display: none; }
+
+.section-body { padding: 22px; }
+
+.field-group {
+  margin-bottom: 18px;
+}
+
+.field-group:last-child { margin-bottom: 0; }
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.field-input,
+.field-textarea {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.field-input:focus,
+.field-textarea:focus { border-color: var(--border-gold); }
+
+.field-textarea {
+  min-height: 80px;
+  resize: vertical;
+  line-height: 1.6;
+  font-weight: 300;
+}
+
+.field-input.dirty,
+.field-textarea.dirty {
+  border-color: var(--gold);
+  background: rgba(201,169,110,0.05);
+}
+
+.field-select {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+}
+
+.save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 14px 24px;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border-gold);
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50;
+}
+
+.save-bar.visible { display: flex; }
+
+.save-bar-info {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.save-bar-info strong {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.save-bar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 11px 22px;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--dark);
+}
+
+.btn-primary:hover { background: #d4b67a; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover { color: var(--text-primary); border-color: var(--text-secondary); }
+
+.toast {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  padding: 14px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  z-index: 200;
+  display: none;
+  animation: slideIn 0.3s ease;
+}
+
+.toast.success {
+  background: rgba(93,184,141,0.15);
+  border: 1px solid rgba(93,184,141,0.4);
+  color: var(--green);
+}
+
+.toast.error {
+  background: rgba(232,93,93,0.15);
+  border: 1px solid rgba(232,93,93,0.4);
+  color: var(--red);
+}
+
+.toast.visible { display: block; }
+
+@keyframes slideIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  .admin-header h1 { font-size: 26px; }
+  .section-body { padding: 16px; }
+  .save-bar { flex-direction: column; gap: 10px; padding: 12px 16px; }
+  .save-bar-actions { width: 100%; }
+  .save-bar-actions .btn { flex: 1; }
+  .toast { top: 70px; left: 16px; right: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Gate -->
+<div class="gate" id="gate">
+  <div class="gate-content">
+    <div class="gate-icon">⚿</div>
+    <h1 class="gate-title">Admin Access</h1>
+    <p class="gate-desc">Restricted area. Enter the admin password to edit the investor information memorandum.</p>
+    <input type="password" id="gate-password" placeholder="Password" autocomplete="off">
+    <button id="gate-submit" onclick="verifyPassword()">Sign In</button>
+    <div class="gate-error" id="gate-error"></div>
+  </div>
+</div>
+
+<!-- Admin Content -->
+<div class="admin-content" id="admin-content">
+  <nav>
+    <div class="nav-logo">SANCTUM <span>Admin</span></div>
+    <div class="nav-actions">
+      <a href="/investors" class="nav-link" target="_blank">View Page →</a>
+      <a href="#" class="nav-link" onclick="logout(); return false;">Sign Out</a>
+    </div>
+  </nav>
+
+  <div style="padding: 32px 24px 80px; max-width: 900px; margin: 0 auto;">
+    <div class="admin-header">
+      <h1>Investor Page Editor</h1>
+      <p>Edit any field below and click "Save Changes" at the bottom. Changes go live on the investor page immediately.</p>
+    </div>
+
+    <div id="sections-container">
+      <p style="color: var(--text-secondary); text-align: center; padding: 40px 0;">Loading content...</p>
+    </div>
+  </div>
+</div>
+
+<!-- Save bar -->
+<div class="save-bar" id="save-bar">
+  <div class="save-bar-info"><strong id="dirty-count">0</strong> unsaved changes</div>
+  <div class="save-bar-actions">
+    <button class="btn btn-secondary" onclick="discardChanges()">Discard</button>
+    <button class="btn btn-primary" id="save-btn" onclick="saveChanges()">Save Changes</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://hnzejfxoycbmthoezwma.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhuemVqZnhveWNibXRob2V6d21hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyODU5MzgsImV4cCI6MjA5MDg2MTkzOH0.UUnDA3H0jo64lGY_QwMkOjPcG9EpyQ7jLcqajE3cGLQ';
+
+let adminPassword = sessionStorage.getItem('sanctum_admin_pw') || null;
+let originalValues = {};
+let currentValues = {};
+
+document.getElementById('gate-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') verifyPassword();
+});
+
+async function verifyPassword() {
+  const password = document.getElementById('gate-password').value;
+  const errorEl = document.getElementById('gate-error');
+  const btn = document.getElementById('gate-submit');
+
+  errorEl.style.display = 'none';
+  if (!password) {
+    errorEl.textContent = 'Please enter the password.';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = 'Verifying...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/verify_admin_password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': ANON_KEY,
+        'Authorization': `Bearer ${ANON_KEY}`
+      },
+      body: JSON.stringify({ p_password: password })
+    });
+
+    const isValid = await res.json();
+
+    if (isValid === true) {
+      adminPassword = password;
+      sessionStorage.setItem('sanctum_admin_pw', password);
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('admin-content').classList.add('visible');
+      loadContent();
+    } else {
+      errorEl.textContent = 'Invalid password.';
+      errorEl.style.display = 'block';
+    }
+  } catch (err) {
+    errorEl.textContent = 'Connection error. Please try again.';
+    errorEl.style.display = 'block';
+  }
+
+  btn.textContent = 'Sign In';
+  btn.disabled = false;
+}
+
+function logout() {
+  sessionStorage.removeItem('sanctum_admin_pw');
+  adminPassword = null;
+  location.reload();
+}
+
+// Auto-login if password is in session storage
+if (adminPassword) {
+  // Verify it's still valid
+  fetch(`${SUPABASE_URL}/rest/v1/rpc/verify_admin_password`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': ANON_KEY,
+      'Authorization': `Bearer ${ANON_KEY}`
+    },
+    body: JSON.stringify({ p_password: adminPassword })
+  })
+    .then(r => r.json())
+    .then(isValid => {
+      if (isValid === true) {
+        document.getElementById('gate').style.display = 'none';
+        document.getElementById('admin-content').classList.add('visible');
+        loadContent();
+      } else {
+        sessionStorage.removeItem('sanctum_admin_pw');
+        adminPassword = null;
+      }
+    })
+    .catch(() => {});
+}
+
+async function loadContent() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/investor_content?select=*&order=section.asc,sort_order.asc`,
+      { headers: { 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` } }
+    );
+    const rows = await res.json();
+
+    // Group by section
+    const sections = {};
+    rows.forEach(row => {
+      if (!sections[row.section]) sections[row.section] = [];
+      sections[row.section].push(row);
+      originalValues[row.field_key] = row.field_value;
+      currentValues[row.field_key] = row.field_value;
+    });
+
+    renderSections(sections);
+  } catch (err) {
+    showToast('Failed to load content: ' + err.message, 'error');
+  }
+}
+
+function renderSections(sections) {
+  const container = document.getElementById('sections-container');
+  container.innerHTML = '';
+
+  // Section order
+  const sectionOrder = [
+    'Capital Allocation',
+    'Revenue Build-Up',
+    'Cumulative Value',
+    'Scenario Modeling',
+    'Risks',
+    'Legal Structure'
+  ];
+
+  const orderedSectionNames = sectionOrder.filter(s => sections[s]);
+
+  orderedSectionNames.forEach(sectionName => {
+    const fields = sections[sectionName];
+    const sectionEl = document.createElement('div');
+    sectionEl.className = 'section';
+    sectionEl.innerHTML = `
+      <div class="section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+        <h2>${sectionName}</h2>
+        <span class="section-toggle">▼</span>
+      </div>
+      <div class="section-body"></div>
+    `;
+    const body = sectionEl.querySelector('.section-body');
+
+    fields.forEach(field => {
+      const group = document.createElement('div');
+      group.className = 'field-group';
+
+      const label = document.createElement('label');
+      label.className = 'field-label';
+      label.textContent = field.display_label;
+      label.setAttribute('for', `f_${field.field_key}`);
+      group.appendChild(label);
+
+      let input;
+      // Special case: risk impact is a select (low/medium/high)
+      if (field.field_key.match(/^risk_\d+_impact$/)) {
+        input = document.createElement('select');
+        input.className = 'field-select';
+        ['low', 'medium', 'high'].forEach(opt => {
+          const o = document.createElement('option');
+          o.value = opt;
+          o.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
+          if (opt === field.field_value) o.selected = true;
+          input.appendChild(o);
+        });
+      } else if (field.field_type === 'longtext') {
+        input = document.createElement('textarea');
+        input.className = 'field-textarea';
+        input.value = field.field_value || '';
+      } else {
+        input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'field-input';
+        input.value = field.field_value || '';
+      }
+      input.id = `f_${field.field_key}`;
+      input.dataset.fieldKey = field.field_key;
+      input.addEventListener('input', onFieldChange);
+      input.addEventListener('change', onFieldChange);
+      group.appendChild(input);
+
+      body.appendChild(group);
+    });
+
+    container.appendChild(sectionEl);
+  });
+}
+
+function onFieldChange(e) {
+  const key = e.target.dataset.fieldKey;
+  const newValue = e.target.value;
+  currentValues[key] = newValue;
+
+  if (newValue !== originalValues[key]) {
+    e.target.classList.add('dirty');
+  } else {
+    e.target.classList.remove('dirty');
+  }
+
+  updateSaveBar();
+}
+
+function getDirtyKeys() {
+  return Object.keys(currentValues).filter(k => currentValues[k] !== originalValues[k]);
+}
+
+function updateSaveBar() {
+  const dirty = getDirtyKeys();
+  const bar = document.getElementById('save-bar');
+  document.getElementById('dirty-count').textContent = dirty.length;
+  if (dirty.length > 0) {
+    bar.classList.add('visible');
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+async function saveChanges() {
+  const dirty = getDirtyKeys();
+  if (dirty.length === 0) return;
+  if (!adminPassword) {
+    showToast('Session expired. Please sign in again.', 'error');
+    setTimeout(() => location.reload(), 1500);
+    return;
+  }
+
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  let successCount = 0;
+  let failed = [];
+
+  for (const key of dirty) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_investor_field`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': ANON_KEY,
+          'Authorization': `Bearer ${ANON_KEY}`
+        },
+        body: JSON.stringify({
+          p_password: adminPassword,
+          p_field_key: key,
+          p_field_value: currentValues[key]
+        })
+      });
+      const result = await res.json();
+      if (result === true) {
+        successCount++;
+        originalValues[key] = currentValues[key];
+        const input = document.getElementById(`f_${key}`);
+        if (input) input.classList.remove('dirty');
+      } else {
+        failed.push(key);
+      }
+    } catch (err) {
+      failed.push(key);
+    }
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Save Changes';
+
+  if (failed.length === 0) {
+    showToast(`Saved ${successCount} change${successCount === 1 ? '' : 's'}.`, 'success');
+    updateSaveBar();
+  } else {
+    showToast(`Saved ${successCount}, failed ${failed.length}. Check your password.`, 'error');
+  }
+}
+
+function discardChanges() {
+  if (!confirm('Discard all unsaved changes?')) return;
+  Object.keys(originalValues).forEach(key => {
+    currentValues[key] = originalValues[key];
+    const input = document.getElementById(`f_${key}`);
+    if (input) {
+      input.value = originalValues[key];
+      input.classList.remove('dirty');
+    }
+  });
+  updateSaveBar();
+}
+
+function showToast(message, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = `toast ${type} visible`;
+  setTimeout(() => toast.classList.remove('visible'), 3500);
+}
+
+// Warn before leaving with unsaved changes
+window.addEventListener('beforeunload', (e) => {
+  if (getDirtyKeys().length > 0) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+</script>
+
+</body>
+</html>
