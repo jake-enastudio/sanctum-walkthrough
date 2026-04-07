@@ -445,7 +445,15 @@
   /* ── Tablet ── */
   @media (max-width: 1024px) {
     section { padding: 70px 32px; }
-    .use-of-funds-layout { gap: 32px; }
+    .use-of-funds-layout {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    .returns-layout {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    .donut-container { max-width: 320px; }
     .calc-inputs { gap: 16px; }
   }
 
